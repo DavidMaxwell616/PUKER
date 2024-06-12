@@ -1,0 +1,1 @@
+hitType = "person";
