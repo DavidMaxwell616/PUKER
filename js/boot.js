@@ -56,7 +56,10 @@ var floorMesh;
    const MAX_ITEMS = 9;
    var tileGap = 0;
    var startDepth = 10;
-  
+  var floorShadow;
+const white = '0xffffff';
+const black = '0x000000';
+const floorTextureHeight = 300;
 
    //    function SubGame()
 //    {
