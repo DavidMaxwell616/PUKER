@@ -56,11 +56,36 @@ var floorMesh;
    const MAX_ITEMS = 9;
    var tileGap = 0;
    var startDepth = 10;
-  var floorShadow;
-const white = '0xffffff';
-const black = '0x000000';
-const floorTextureHeight = 300;
-
+   var floorShadow;
+   const floorTextureHeight = 300;
+   var backgroundItems = [];
+   var backgroundItemsTimer=0;
+   var backgroundItemsTimerMax = 0;
+   var backgroundImages;
+   var backgroundItemsY = 186;
+   var cursors;
+   var isUpDown;
+   var isDownDown;
+   var pukerScale =1;
+   var pukerSpeed = 1;
+   var walkerShowing = false;
+   var walker;
+   var walkerSpeed = 1;
+   var backgroundWalkers = [];
+   var backgroundWalkersTimer=0;
+   var backgroundWalkersTimerMax = 0;
+   var backgroundWalkers;
+   var backgroundWalkersY = 190;
+   const WalkerType = 
+   ['girl walker',
+     'dude walker',
+     'hoodie walker'
+   ];
+  
+   var cursors;
+   var isUpDown;
+   var isDownDown;
+   var pukeMeter;
    //    function SubGame()
 //    {
 //       super();

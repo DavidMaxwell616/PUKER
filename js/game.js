@@ -23,13 +23,12 @@ var config = {
 let screenWidth = window.innerWidth * window.devicePixelRatio;
 let screenHeight = window.innerHeight * window.devicePixelRatio;
 var game = new Phaser.Game(config);
+
 function create() {
   floor = this.add.plane(game.config.width/2,336,'floor');
-
   // floor.createCheckerboard();
    floor.setGridSize(16, 16);
    floor.uvScale(16,16);
-   floor.setViewHeight(512);
    floor.viewPosition.z = 1.6;
    floor.rotateX = 285;
    floor.setScale(1.6);
@@ -44,11 +43,19 @@ wall2 = this.add.sprite(-1000,0,'wall').setOrigin(0,0).setScale(1.5);
  
    texture.context.fillStyle = grd;
    texture.context.fillRect(0, 0, game.config.width, floorTextureHeight);
-
    //  Call this if running under WebGL, or you'll see nothing change
    texture.refresh();
    floorShadow = this.add.image(500 , 386, 'gradient');
-  puker = this.add.sprite(game.config.width*.8, game.config.height*.5, 'puker');
+   backgroundImages = this.add.sprite(0,backgroundItemsY,'background items');
+   girl_walker = this.add.sprite(0,0,'girl walker');
+   dude_walker = this.add.sprite(0,0,'dude walker');
+   hoodie_walker = this.add.sprite(0,0,'hoodie walker');
+    girl_walker.visible = false;
+    dude_walker.visible = false;
+    hoodie_walker.visible = false;
+   var image = backgroundImages.setFrame(2);
+   backgroundItems.push(image);
+   puker = this.add.sprite(game.config.width*.8, game.config.height*.5, 'puker');
   this.anims.create({
     key: 'pukerWalking',
     frames: this.anims.generateFrameNumbers('puker',
@@ -59,29 +66,110 @@ wall2 = this.add.sprite(-1000,0,'wall').setOrigin(0,0).setScale(1.5);
     frameRate: 16,
     repeat: -1
   });
-  puker.anims.play('pukerWalking')
+  puker.anims.play('pukerWalking');
+  backgroundItemsTimerMax = Phaser.Math.Between(600, 1000);
+  pukeMeter = this.add.sprite(50,260,'pukeMeter').setScale(1.3);
+  
+  cursors = this.input.keyboard.createCursorKeys();
+
   startGame = true;
 };
 
 
 function DoWallAndFloorStuff(){
   if(wall.x<1000)
-    wall.x++;
+    wall.x+=pukerSpeed;
   else
   wall.x=-999;
-  if(wall2.x<1000)
-    wall2.x++;
+  if(wall2.x<900)
+    wall2.x+=pukerSpeed;
   else
-  wall2.x=-999;
+  wall2.x=-1099;
 
   floor.uvScroll(-0.012,0);
 
 }
 
+function DoBackgroundObjectsStuff(_scene)
+{
+  backgroundItems.forEach((element) => 
+    {element.x++;
+     if(element.x>game.config.width+500)
+      {
+        element.destroy();
+      } 
+    }
+);
+  if(++backgroundItemsTimer>backgroundItemsTimerMax)
+    {
+      const image = _scene.add.sprite(0 , 186, 'background items');
+       image.setFrame(Phaser.Math.Between(0, 8));
+      backgroundItems.push(image);
+      backgroundItemsTimer = 0;
+      backgroundItemsTimerMax = Phaser.Math.Between(600, 1000);
+        
+    }
+}
+
+function CheckPukerMove(scene)
+{
+  if (this.cursors.up.isDown && puker.y>205)
+    {
+        puker.y--;
+        puker.x-=1;
+        puker.setScale(pukerScale-=.005);
+    }
+    else if (this.cursors.down.isDown)
+    {
+      puker.y++;
+      puker.x+=1;
+      puker.setScale(pukerScale+=.005);
+    }
+}
+
+function ShowWalker(scene){
+ if(!walkerShowing)
+{
+  walkerSpeed = 1.5;
+  const walkerStyle = Phaser.Math.Between(0,2);
+  walker = scene.add.sprite(10,backgroundWalkersY,WalkerType[walkerStyle]); 
+  console.log(walker);
+  // walker.setScale(.8);
+  // scene.anims.create({
+  //   key: 'walking',
+  //   frames: scene.anims.generateFrameNumbers(WalkerType[walkerStyle],
+  //     {
+  //       start: 0,
+  //       end: 19
+  //     }),
+  //   frameRate: 16,
+  //   repeat: -1
+  // });
+  // walker.anims.play('walking');
+   walkerShowing = true;
+}
+else{
+
+if(walker.x< screenWidth && walker.x>0)
+  {  
+      walker.x+=walkerSpeed;
+  }
+else
+{
+  walker.destroy();
+  walkerShowing = false;
+}
+}
+}
+
 function update() {
   if (!startGame)
     return;
+  puker.setDepth(1);
   DoWallAndFloorStuff();
+  DoBackgroundObjectsStuff(this);
+  CheckPukerMove(this);
+  ShowWalker(this)
 }
 
 
