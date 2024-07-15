@@ -23,9 +23,15 @@ var config = {
 let screenWidth = window.innerWidth * window.devicePixelRatio;
 let screenHeight = window.innerHeight * window.devicePixelRatio;
 var game = new Phaser.Game(config);
-
+var scene;
 function create() {
-  floor = this.add.plane(game.config.width/2,336,'floor');
+  scene = this;  
+  if (!startGame) mainMenuCreate(scene,game);
+  else gameCreate(scene);
+  }
+
+  function gameCreate(scene){
+  floor = scene.add.plane(game.config.width/2,336,'floor');
   // floor.createCheckerboard();
    floor.setGridSize(16, 16);
    floor.uvScale(16,16);
@@ -34,31 +40,25 @@ function create() {
    floor.setScale(1.6);
 //floor.visible = false;   
 //FLOOR SHADOW
-wall = this.add.sprite(0,0,'wall').setOrigin(0,0).setScale(1.5);
-wall2 = this.add.sprite(-1000,0,'wall').setOrigin(0,0).setScale(1.5);
- var texture = this.textures.createCanvas('gradient', game.config.width, floorTextureHeight);
+wall = scene.add.sprite(0,0,'wall').setOrigin(0,0).setScale(1.5);
+wall2 = scene.add.sprite(-1000,0,'wall').setOrigin(0,0).setScale(1.5);
+ var texture = scene.textures.createCanvas('gradient', game.config.width, floorTextureHeight);
    const grd = texture.context.createLinearGradient(0, 0, 0, floorTextureHeight);
    grd.addColorStop(0, "rgba(0, 0, 0, .8)");
    grd.addColorStop(1, "rgba(0, 0, 0, 0)");
  
    texture.context.fillStyle = grd;
    texture.context.fillRect(0, 0, game.config.width, floorTextureHeight);
-   //  Call this if running under WebGL, or you'll see nothing change
+   //  Call scene if running under WebGL, or you'll see nothing change
    texture.refresh();
-   floorShadow = this.add.image(500 , 386, 'gradient');
-   backgroundImages = this.add.sprite(0,backgroundItemsY,'background items');
-   girl_walker = this.add.sprite(0,0,'girl walker');
-   dude_walker = this.add.sprite(0,0,'dude walker');
-   hoodie_walker = this.add.sprite(0,0,'hoodie walker');
-    girl_walker.visible = false;
-    dude_walker.visible = false;
-    hoodie_walker.visible = false;
+   floorShadow = scene.add.image(500 , 386, 'gradient');
+   backgroundImages = scene.add.sprite(0,backgroundItemsY,'background items');
    var image = backgroundImages.setFrame(2);
    backgroundItems.push(image);
-   puker = this.add.sprite(game.config.width*.8, game.config.height*.5, 'puker');
-  this.anims.create({
+   puker = scene.add.sprite(game.config.width*.8, game.config.height*.5, 'puker');
+  scene.anims.create({
     key: 'pukerWalking',
-    frames: this.anims.generateFrameNumbers('puker',
+    frames: scene.anims.generateFrameNumbers('puker',
       {
         start: 0,
         end: 9
@@ -68,9 +68,9 @@ wall2 = this.add.sprite(-1000,0,'wall').setOrigin(0,0).setScale(1.5);
   });
   puker.anims.play('pukerWalking');
   backgroundItemsTimerMax = Phaser.Math.Between(600, 1000);
-  pukeMeter = this.add.sprite(50,260,'pukeMeter').setScale(1.3);
+  pukeMeter = scene.add.sprite(50,260,'pukeMeter').setScale(1.3);
   
-  cursors = this.input.keyboard.createCursorKeys();
+  cursors = scene.input.keyboard.createCursorKeys();
 
   startGame = true;
 };
@@ -132,8 +132,7 @@ function ShowWalker(scene){
 {
   walkerSpeed = 1.5;
   const walkerStyle = Phaser.Math.Between(0,2);
-  walker = scene.add.sprite(10,backgroundWalkersY,WalkerType[walkerStyle]); 
-  console.log(walker);
+  walker = scene.add.sprite(10,backgroundWalkersY,'girl walker'); 
   // walker.setScale(.8);
   // scene.anims.create({
   //   key: 'walking',

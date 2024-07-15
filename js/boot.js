@@ -86,6 +86,7 @@ var floorMesh;
    var isUpDown;
    var isDownDown;
    var pukeMeter;
+   var splash;
    //    function SubGame()
 //    {
 //       super();
