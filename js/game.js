@@ -56,7 +56,7 @@ wall2 = scene.add.sprite(-1000,0,'wall').setOrigin(0,0).setScale(1.5);
    var image = backgroundImages.setFrame(2);
    backgroundItems.push(image);
    puker = scene.add.sprite(game.config.width*.8, game.config.height*.5, 'puker');
-  scene.anims.create({
+   scene.anims.create({
     key: 'pukerWalking',
     frames: scene.anims.generateFrameNumbers('puker',
       {
@@ -69,7 +69,9 @@ wall2 = scene.add.sprite(-1000,0,'wall').setOrigin(0,0).setScale(1.5);
   puker.anims.play('pukerWalking');
   backgroundItemsTimerMax = Phaser.Math.Between(600, 1000);
   pukeMeter = scene.add.sprite(50,260,'pukeMeter').setScale(1.3);
-  
+  powerBar = scene.add.sprite(game.config.width/2,game.config.height-50,'power bar').setScale(1.3);
+  avatar = scene.add.sprite(game.config.width-150,game.config.height-50,'avatar').setScale(-1.3,1);
+ 
   cursors = scene.input.keyboard.createCursorKeys();
 
   startGame = true;
