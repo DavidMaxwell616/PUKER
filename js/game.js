@@ -132,25 +132,27 @@ function CheckPukerMove(scene)
 function ShowWalker(scene){
  if(!walkerShowing)
 {
-  walkerSpeed = 1.5;
-  const walkerStyle = Phaser.Math.Between(0,2);
-  walker = scene.add.sprite(10,backgroundWalkersY,'girl walker'); 
-  // walker.setScale(.8);
-  // scene.anims.create({
-  //   key: 'walking',
-  //   frames: scene.anims.generateFrameNumbers(WalkerType[walkerStyle],
-  //     {
-  //       start: 0,
-  //       end: 19
-  //     }),
-  //   frameRate: 16,
-  //   repeat: -1
-  // });
-  // walker.anims.play('walking');
-   walkerShowing = true;
+  walkerSpeed = Phaser.Math.FloatBetween(0.5,2);;
+  const walkerStyle = Phaser.Math.Between(0,0.5);
+  walker = scene.add.sprite(10,backgroundWalkersY,WalkerType[walkerStyle]); 
+  console.log(WalkerType[walkerStyle]);
+  const frames = WalkerType[walkerStyle].startsWith('girl') ? 19 : 15;
+  walker.setScale(.8);
+  scene.anims.create({
+    key: 'walking',
+    frames: scene.anims.generateFrameNumbers(WalkerType[walkerStyle],
+      {
+        start: 0,
+        end: frames
+      }),
+    frameRate: 16,
+    repeat: -1
+  });
+  walkerShowing = true;
 }
-else{
-
+else
+{
+  walker.x+=walkerSpeed;
 if(walker.x< screenWidth && walker.x>0)
   {  
       walker.x+=walkerSpeed;
@@ -158,6 +160,7 @@ if(walker.x< screenWidth && walker.x>0)
 else
 {
   walker.destroy();
+  scene.anims.destroy('walker');
   walkerShowing = false;
 }
 }
@@ -170,7 +173,7 @@ function update() {
   DoWallAndFloorStuff();
   DoBackgroundObjectsStuff(this);
   CheckPukerMove(this);
-  ShowWalker(this)
+ ShowWalker(this)
 }
 
 
