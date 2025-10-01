@@ -1,1 +1,0 @@
-﻿////Warning: in this unregistered version, no Action Script will be generated while exporting the FLA. Please purchase the full version to get Action Script at http://www.sothink.com/product/flashdecompiler/index.htm.
