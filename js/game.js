@@ -58,6 +58,12 @@ function gameCreate(scene) {
   backgroundImages = scene.add.sprite(game.config.width, backgroundItemsY, 'background items');
   var image = backgroundImages.setFrame(Phaser.Math.Between(2, 15));
   backgroundItems.add(image);
+
+  var obstacleY = Phaser.Math.Between(386, 600);
+  game_consoles = scene.add.sprite(game.config.width, obstacleY, 'game consoles');
+  var image = game_consoles.setFrame(Phaser.Math.Between(0, 5));
+  obstacles.add(image);
+
   puker = scene.add.sprite(game.config.width * .3, game.config.height * .5, 'puker');
   scene.anims.create({
     key: 'pukerWalking',
@@ -71,6 +77,7 @@ function gameCreate(scene) {
   });
   puker.anims.play('pukerWalking');
   backgroundItemsTimerMax = Phaser.Math.Between(600, 1000);
+  obstaclesTimerMax = Phaser.Math.Between(600, 1000);
   pukeMeter = scene.add.sprite(50, 260, 'pukeMeter').setScale(-1.3);
   powerBar = scene.add.sprite(game.config.width / 2, game.config.height - 20, 'power bar').setScale(1.3);
   avatar = scene.add.sprite(150, game.config.height - 20, 'avatar');
@@ -101,13 +108,31 @@ function DoBackgroundObjectsStuff(_scene) {
     }
   }
   );
+  obstacles.getChildren().forEach((element) => {
+    element.x--;
+    if (element.x < 0) {
+      element.destroy();
+    }
+  }
+  );
+  if (avatar.x < 800) {
+    avatar.x += .1;
+  }
   if (++backgroundItemsTimer > backgroundItemsTimerMax) {
-    const image = _scene.add.sprite(game.config.width, 186, 'background items');
-    image.setFrame(Phaser.Math.Between(0, 8));
+    var image = scene.add.sprite(game.config.width, backgroundItemsY, backgroundImages)
+      .setFrame(Phaser.Math.Between(2, 15));
     backgroundItems.add(image);
     backgroundItemsTimer = 0;
     backgroundItemsTimerMax = Phaser.Math.Between(600, 1000);
 
+  }
+  if (++obstaclesTimer > obstaclesTimerMax) {
+    const obstacleY = Phaser.Math.Between(386, 600);
+    var image = scene.add.sprite(game.config.width, obstacleY, game_consoles)
+      .setFrame(Phaser.Math.Between(0, 5));
+    obstacles.add(image);
+    obstaclesTimer = 0;
+    obstaclesTimerMax = Phaser.Math.Between(600, 1000);
   }
 }
 
@@ -165,7 +190,7 @@ function update() {
   DoWallAndFloorStuff();
   DoBackgroundObjectsStuff(this);
   CheckPukerMove(this);
-  ShowWalker(this)
+  // ShowWalker(this)
 }
 
 
