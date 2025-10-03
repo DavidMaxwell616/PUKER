@@ -31,6 +31,9 @@ function create() {
 }
 
 function gameCreate(scene) {
+  backgroundItems = scene.add.group();
+  obstacles = scene.add.group();
+  people = scene.add.group();
   floor = scene.add.plane(game.config.width / 2, 336, 'floor');
   // floor.createCheckerboard();
   floor.setGridSize(16, 16);
@@ -52,9 +55,9 @@ function gameCreate(scene) {
   //  Call scene if running under WebGL, or you'll see nothing change
   texture.refresh();
   floorShadow = scene.add.image(500, 386, 'gradient');
-  backgroundImages = scene.add.sprite(0, backgroundItemsY, 'background items');
-  var image = backgroundImages.setFrame(2);
-  backgroundItems.push(image);
+  backgroundImages = scene.add.sprite(game.config.width, backgroundItemsY, 'background items');
+  var image = backgroundImages.setFrame(Phaser.Math.Between(2, 15));
+  backgroundItems.add(image);
   puker = scene.add.sprite(game.config.width * .3, game.config.height * .5, 'puker');
   scene.anims.create({
     key: 'pukerWalking',
@@ -69,8 +72,8 @@ function gameCreate(scene) {
   puker.anims.play('pukerWalking');
   backgroundItemsTimerMax = Phaser.Math.Between(600, 1000);
   pukeMeter = scene.add.sprite(50, 260, 'pukeMeter').setScale(-1.3);
-  powerBar = scene.add.sprite(game.config.width / 2, game.config.height - 50, 'power bar').setScale(1.3);
-  avatar = scene.add.sprite(150, game.config.height - 50, 'avatar');
+  powerBar = scene.add.sprite(game.config.width / 2, game.config.height - 20, 'power bar').setScale(1.3);
+  avatar = scene.add.sprite(150, game.config.height - 20, 'avatar');
 
   cursors = scene.input.keyboard.createCursorKeys();
 
@@ -91,17 +94,17 @@ function DoWallAndFloorStuff() {
 }
 
 function DoBackgroundObjectsStuff(_scene) {
-  backgroundItems.forEach((element) => {
+  backgroundItems.getChildren().forEach((element) => {
     element.x--;
-    if (element.x > game.config.width + 500) {
+    if (element.x < 0) {
       element.destroy();
     }
   }
   );
   if (++backgroundItemsTimer > backgroundItemsTimerMax) {
-    const image = _scene.add.sprite(0, 186, 'background items');
+    const image = _scene.add.sprite(game.config.width, 186, 'background items');
     image.setFrame(Phaser.Math.Between(0, 8));
-    backgroundItems.push(image);
+    backgroundItems.add(image);
     backgroundItemsTimer = 0;
     backgroundItemsTimerMax = Phaser.Math.Between(600, 1000);
 
@@ -111,13 +114,13 @@ function DoBackgroundObjectsStuff(_scene) {
 function CheckPukerMove(scene) {
   if (this.cursors.up.isDown && puker.y > 205) {
     puker.y--;
-    puker.x -= 1;
     puker.setScale(pukerScale -= .005);
+    puker.setBlendMode(Phaser.BlendModes.DARKEN);;
   }
-  else if (this.cursors.down.isDown) {
+  else if (this.cursors.down.isDown && puker.y < 348) {
     puker.y++;
-    puker.x += 1;
     puker.setScale(pukerScale += .005);
+    puker.setBlendMode(Phaser.BlendModes.BRIGHTEN);
   }
 }
 
@@ -157,11 +160,12 @@ function ShowWalker(scene) {
 function update() {
   if (!startGame)
     return;
+
   puker.setDepth(1);
   DoWallAndFloorStuff();
-  //DoBackgroundObjectsStuff(this);
+  DoBackgroundObjectsStuff(this);
   CheckPukerMove(this);
-  //ShowWalker(this)
+  ShowWalker(this)
 }
 
 
