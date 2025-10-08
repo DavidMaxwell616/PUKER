@@ -36,7 +36,7 @@ function gameCreate(scene) {
   people = scene.add.group();
   pukerStates = scene.add.group();
   floor = scene.add.plane(game.config.width / 2, 336, 'floor');
-  //floor.createCheckerboard();
+  floor.createCheckerboard();
   floor.setGridSize(16, 16);
   floor.uvScale(16, 16);
   floor.viewPosition.z = 1.6;
@@ -72,16 +72,19 @@ function gameCreate(scene) {
       frames: scene.anims.generateFrameNumbers(state.id,
         {
           start: 0,
-          end: 9
+          end: state.frames
         }),
       frameRate: 16,
       repeat: -1
     });
     puker.visible = false;
+    puker.id = state.id;
+    puker.name = state.name;
     pukerStates.add(puker);
   });
-  var puker = getChildById(pukerStates, 7);
-  puker_state.anims(puker_states[0].id).play();
+  puker_state = getChildById(pukerStates, PUKER_STATE_ENUM.puker_walking);
+  puker_state.anims.play(puker_state.name);
+  puker_state.visible = true;
   backgroundItemsTimerMax = Phaser.Math.Between(600, 1000);
   obstaclesTimerMax = Phaser.Math.Between(600, 1000);
   pukeMeter = scene.add.sprite(50, 260, 'pukeMeter').setScale(1.3);

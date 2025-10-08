@@ -44,3 +44,15 @@ var pukeMeter;
 var splash;
 var powerBar;
 var avatar;
+
+const PUKER_STATE_ENUM =
+{
+    "puker_bumping": 0,
+    "puker_drinking": 1,
+    "puker_falling": 2,
+    "puker_gagging": 3,
+    "puker_running": 4,
+    "puker_stumbling_1": 5,
+    "puker_stumbling_2": 6,
+    "puker_walking": 7
+};

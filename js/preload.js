@@ -5,49 +5,57 @@ function preload() {
             id: 0,
             name: "puker_bumping",
             height: 194,
-            width: 238
+            width: 238,
+            frames: 11
         },
         {
             id: 1,
             name: "puker_drinking",
             height: 188,
-            width: 320
+            width: 320,
+            frames: 18
         },
         {
             id: 2,
             name: "puker_falling",
             height: 226,
-            width: 420
+            width: 420,
+            frames: 33
         },
         {
             id: 3,
             name: "puker_gagging",
             height: 182,
-            width: 227
+            width: 227,
+            frames: 30
         },
         {
             id: 4,
             name: "puker_running",
             height: 209,
-            width: 225
+            width: 225,
+            frames: 9
         },
         {
             id: 5,
             name: "puker_stumbling_1",
             height: 197,
-            width: 240
+            width: 240,
+            frames: 16
         },
         {
             id: 6,
             name: "puker_stumbling_2",
             height: 175,
-            width: 240
+            width: 240,
+            frames: 16
         },
         {
             id: 7,
             name: "puker_walking",
             height: 166,
-            width: 240
+            width: 240,
+            frames: 9
         }
     ];
 
