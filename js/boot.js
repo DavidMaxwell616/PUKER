@@ -35,7 +35,7 @@ var obstaclesTimer = 0;
 var obstaclesTimerMax;
 var pukerStates;
 var puker_states;
-var puker_state;
+var puker;
 
 var cursors;
 var isUpDown;
