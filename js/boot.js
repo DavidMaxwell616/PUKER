@@ -34,7 +34,6 @@ var game_consoles;
 var obstaclesTimer = 0;
 var obstaclesTimerMax;
 var pukerStates;
-var puker_states;
 var puker;
 
 var cursors;
@@ -56,3 +55,62 @@ const PUKER_STATE_ENUM =
     "puker_stumbling_2": 6,
     "puker_walking": 7
 };
+
+const puker_states = [
+    {
+        id: 0,
+        name: "puker_bumping",
+        width: 194,
+        height: 238,
+        frames: 11
+    },
+    {
+        id: 1,
+        name: "puker_drinking",
+        width: 188,
+        height: 320,
+        frames: 19
+    },
+    {
+        id: 2,
+        name: "puker_falling",
+        width: 226,
+        height: 420,
+        frames: 33
+    },
+    {
+        id: 3,
+        name: "puker_gagging",
+        width: 182,
+        height: 227,
+        frames: 30
+    },
+    {
+        id: 4,
+        name: "puker_running",
+        width: 209,
+        height: 225,
+        frames: 9
+    },
+    {
+        id: 5,
+        name: "puker_stumbling_1",
+        width: 197,
+        height: 240,
+        frames: 16
+    },
+    {
+        id: 6,
+        name: "puker_stumbling_2",
+        width: 175,
+        height: 240,
+        frames: 16
+    },
+    {
+        id: 7,
+        name: "puker_walking",
+        width: 166,
+        height: 240,
+        frames: 9
+    }
+];
