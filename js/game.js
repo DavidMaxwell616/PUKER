@@ -1,4 +1,4 @@
-var config = {
+const config = {
   type: Phaser.WEBGL,
   width: 1000,
   height: 550,
@@ -23,7 +23,7 @@ var config = {
 
 let screenWidth = window.innerWidth * window.devicePixelRatio;
 let screenHeight = window.innerHeight * window.devicePixelRatio;
-var game = new Phaser.Game(config);
+const game = new Phaser.Game(config);
 var scene;
 function create() {
   scene = this;
@@ -32,81 +32,76 @@ function create() {
 }
 
 function gameCreate(scene) {
-  try {
-    backgroundItems = scene.add.group();
-    obstacles = scene.add.group();
-    people = scene.add.group();
-    pukerStates = scene.add.group();
+  backgroundItems = scene.add.group();
+  obstacles = scene.add.group();
+  people = scene.add.group();
+  pukerStates = scene.add.group();
 
-    floor = scene.add.plane(game.config.width / 2, 336, 'floor');
-    floor.createCheckerboard();
-    floor.setGridSize(16, 16);
-    floor.uvScale(16, 16);
-    floor.viewPosition.z = 1.6;
-    floor.rotateX = 285;
-    floor.setScale(1.6);
-    //floor.visible = false;   
-    //FLOOR SHADOW
-    wall = scene.add.sprite(0, 0, 'wall').setOrigin(0, 0).setScale(1.5);
-    wall2 = scene.add.sprite(1000, 0, 'wall').setOrigin(0, 0).setScale(1.5);
-    var texture = scene.textures.createCanvas('gradient', game.config.width, floorTextureHeight);
-    const grd = texture.context.createLinearGradient(0, 0, 0, floorTextureHeight);
-    grd.addColorStop(0, "rgba(0, 0, 0, .7)");
-    grd.addColorStop(1, "rgba(0, 0, 0, .01)");
+  floor = scene.add.plane(game.config.width / 2, 336, 'floor');
+  floor.createCheckerboard();
+  floor.setGridSize(16, 16);
+  floor.uvScale(16, 16);
+  floor.viewPosition.z = 1.6;
+  floor.rotateX = 285;
+  floor.setScale(1.6);
+  //floor.visible = false;   
+  //FLOOR SHADOW
+  wall = scene.add.sprite(0, 0, 'wall').setOrigin(0, 0).setScale(1.5);
+  wall2 = scene.add.sprite(1000, 0, 'wall').setOrigin(0, 0).setScale(1.5);
+  var texture = scene.textures.createCanvas('gradient', game.config.width, floorTextureHeight);
+  const grd = texture.context.createLinearGradient(0, 0, 0, floorTextureHeight);
+  grd.addColorStop(0, "rgba(0, 0, 0, .7)");
+  grd.addColorStop(1, "rgba(0, 0, 0, .01)");
 
-    texture.context.fillStyle = grd;
-    texture.context.fillRect(0, 0, game.config.width, floorTextureHeight);
-    //  Call scene if running under WebGL, or you'll see nothing change
-    texture.refresh();
-    floorShadow = scene.add.image(500, 386, 'gradient');
-    backgroundImages = scene.add.sprite(game.config.width, backgroundItemsY, 'background items');
-    var image = backgroundImages.setFrame(Phaser.Math.Between(0, backgroundImages.frames));
-    backgroundItems.add(image);
+  texture.context.fillStyle = grd;
+  texture.context.fillRect(0, 0, game.config.width, floorTextureHeight);
+  //  Call scene if running under WebGL, or you'll see nothing change
+  texture.refresh();
+  floorShadow = scene.add.image(500, 386, 'gradient');
+  backgroundImages = scene.add.sprite(game.config.width, backgroundItemsY, 'background items');
+  var image = backgroundImages.setFrame(Phaser.Math.Between(0, backgroundImages.frames));
+  backgroundItems.add(image);
 
-    var obstacleY = Phaser.Math.Between(386, 600);
-    game_consoles = scene.add.sprite(game.config.width, obstacleY, 'game consoles');
-    var image = game_consoles.setFrame(Phaser.Math.Between(0, 5));
-    obstacles.add(image);
+  const obstacleY = Phaser.Math.Between(386, 600);
+  game_consoles = scene.add.sprite(game.config.width, obstacleY, 'game consoles');
+  image = game_consoles.setFrame(Phaser.Math.Between(0, 5));
+  obstacles.add(image);
 
-    puker_states.forEach(state => {
-      const newPuker = scene.add.sprite(game.config.width * .3, game.config.height * .5, state.name);
-      const anim = scene.anims.create({
-        key: state.name,
-        frames: scene.anims.generateFrameNumbers(state.name,
-          {
-            start: 0,
-            end: state.frames
-          }),
-        frameRate: 16,
-        repeat: -1
-      });
-      if (state.id === PUKER_STATE_ENUM.puker_drinking) {
-        //console.log(state.frames, anim.frames, anim.frames.length);
-      }
-      newPuker.visible = false;
-      newPuker.id = state.id;
-      newPuker.name = state.name;
-      pukerStates.add(newPuker);
+  puker_states.forEach(state => {
+    var newPuker = scene.add.sprite(game.config.width * .3, game.config.height * .5, state.name);
+    const anim = scene.anims.create({
+      key: state.name,
+      frames: scene.anims.generateFrameNumbers(state.name,
+        {
+          start: 0,
+          end: state.frames
+        }),
+      frameRate: 16,
+      repeat: -1
     });
-    puker = getChildById(pukerStates, PUKER_STATE_ENUM.puker_walking);
-    puker.anims.play(puker.name);
-    puker.visible = true;
-    backgroundItemsTimerMax = Phaser.Math.Between(600, 1000);
-    obstaclesTimerMax = Phaser.Math.Between(600, 1000);
-    pukeMeter = scene.add.sprite(25, 260, 'pukeMeter').setScale(1.4);
-    puke = scene.add.sprite(27, 450, 'puke').setScale(1.3).setOrigin(.5, 0);
-    powerBar = scene.add.sprite(game.config.width / 2, game.config.height - 20, 'power bar').setScale(1.3);
-    avatar = scene.add.sprite(150, game.config.height - 20, 'avatar');
-    cursors = scene.input.keyboard.createCursorKeys();
-    startGame = true;
-  }
-  catch {
-    console.warn('error');
-  }
+    if (state.id === PUKER_STATE_ENUM.puker_drinking) {
+      //console.log(state.frames, anim.frames, anim.frames.length);
+    }
+    newPuker.visible = false;
+    newPuker.id = state.id;
+    newPuker.name = state.name;
+    pukerStates.add(newPuker);
+  });
+  puker = getChildById(pukerStates, PUKER_STATE_ENUM.puker_walking);
+  puker.anims.play(puker.name);
+  puker.visible = true;
+  backgroundItemsTimerMax = Phaser.Math.Between(600, 1000);
+  obstaclesTimerMax = Phaser.Math.Between(600, 1000);
+  pukeMeter = scene.add.sprite(25, 260, 'pukeMeter').setScale(1.4);
+  puke = scene.add.sprite(27, 450, 'puke').setScale(1.3).setOrigin(.5, 0);
+  powerBar = scene.add.sprite(game.config.width / 2, game.config.height - 20, 'power bar').setScale(1.3);
+  avatar = scene.add.sprite(150, game.config.height - 20, 'avatar');
+  cursors = scene.input.keyboard.createCursorKeys();
+  startGame = true;
 };
 
 function getChildById(group, id) {
-  let children = group.getChildren();
+  const children = group.getChildren();
   for (let i = 0; i < children.length; i++) {
     if (children[i].id === id) {
       return children[i];
@@ -145,7 +140,7 @@ function DoBackgroundObjectsStuff(_scene) {
     avatar.x += .1;
   }
   if (++backgroundItemsTimer > backgroundItemsTimerMax) {
-    var image = scene.add.sprite(game.config.width, backgroundItemsY, 'background items')
+    const image = scene.add.sprite(game.config.width, backgroundItemsY, 'background items')
       .setFrame(Phaser.Math.Between(0, 9));
     backgroundItems.add(image);
     backgroundItemsTimer = 0;
@@ -154,7 +149,7 @@ function DoBackgroundObjectsStuff(_scene) {
   }
   if (++obstaclesTimer > obstaclesTimerMax) {
     const obstacleY = Phaser.Math.Between(286, 500);
-    var image = scene.add.sprite(game.config.width, obstacleY, 'game consoles')
+    const image = scene.add.sprite(game.config.width, obstacleY, 'game consoles')
       .setFrame(Phaser.Math.Between(0, 5));
     obstacles.add(image);
     obstaclesTimer = 0;
@@ -175,12 +170,14 @@ function CheckPukerMove(scene) {
   }
   else if (cursors.right.isDown) {
     pukerSpeed = 2;
-    //puker.anims.play('puker_running');
+    puker = getChildById(pukerStates, PUKER_STATE_ENUM.puker_running);
+    puker.anims.play('puker_running');
 
   }
   else if (cursors.right.isUp) {
     pukerSpeed = 1;
-    // puker.anims.play('puker_walking');
+    puker = getChildById(pukerStates, PUKER_STATE_ENUM.puker_walking);
+    puker.anims.play('puker_walking');
   }
 }
 
@@ -219,7 +216,7 @@ function ShowWalker(scene) {
 function update() {
   if (!startGame)
     return;
-  if (puke.y > 20) {
+  if (puke.y > 40) {
     puke.y -= .1;
   }
   puke.setDepth(1);

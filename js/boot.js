@@ -44,7 +44,7 @@ var pukeMeter;
 var splash;
 var powerBar;
 var avatar;
-
+var puke;
 const PUKER_STATE_ENUM =
 {
     "puker_bumping": 0,
