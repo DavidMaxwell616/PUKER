@@ -69,7 +69,7 @@ function gameCreate(scene) {
 
   puker_states.forEach(state => {
     var newPuker = scene.add.sprite(game.config.width * .3, game.config.height * .5, state.name);
-    const anim = scene.anims.create({
+    scene.anims.create({
       key: state.name,
       frames: scene.anims.generateFrameNumbers(state.name,
         {
@@ -79,16 +79,17 @@ function gameCreate(scene) {
       frameRate: 16,
       repeat: -1
     });
-    if (state.id === PUKER_STATE_ENUM.puker_drinking) {
-      //console.log(state.frames, anim.frames, anim.frames.length);
-    }
+    // if (state.id === 7) {
+    //   //console.log(state.frames, anim.frames, anim.frames.length);
+    // }
     newPuker.visible = false;
     newPuker.id = state.id;
     newPuker.name = state.name;
     pukerStates.add(newPuker);
   });
-  puker = getChildById(pukerStates, PUKER_STATE_ENUM.puker_walking);
-  puker.anims.play(puker.name);
+  puker = pukerStates.getChildren()[PUKER_STATE.WALKING];
+  const anim = game.anims.anims.entries[PUKER_ANIM.WALKING];
+  puker.anims.play(anim);
   puker.visible = true;
   backgroundItemsTimerMax = Phaser.Math.Between(600, 1000);
   obstaclesTimerMax = Phaser.Math.Between(600, 1000);
@@ -100,15 +101,6 @@ function gameCreate(scene) {
   startGame = true;
 };
 
-function getChildById(group, id) {
-  const children = group.getChildren();
-  for (let i = 0; i < children.length; i++) {
-    if (children[i].id === id) {
-      return children[i];
-    }
-  }
-  return null;
-}
 function DoWallAndFloorStuff() {
   if (wall.x > -1000)
     wall.x -= pukerSpeed;
@@ -158,26 +150,34 @@ function DoBackgroundObjectsStuff(_scene) {
 }
 
 function CheckPukerMove(scene) {
-  if (this.cursors.up.isDown && puker.y > 205) {
+  if (this.cursors.up.isDown && puker.y > PUKER_MIN_Y) {
     puker.y--;
     puker.setScale(pukerScale -= .005);
-    puker.setBlendMode(Phaser.BlendModes.DARKEN);;
+    const originalColor = puker.tintTopLeft;
+    let color = Phaser.Display.Color.IntegerToColor(originalColor);
+    color.brighten(-.5);
+    puker.setTint(color.color);
+
   }
-  else if (this.cursors.down.isDown && puker.y < 348) {
+  else if (this.cursors.down.isDown && puker.y < PUKER_MAX_Y) {
     puker.y++;
     puker.setScale(pukerScale += .005);
-    puker.setBlendMode(Phaser.BlendModes.BRIGHTEN);
+    const originalColor = puker.tintTopLeft;
+    let color = Phaser.Display.Color.IntegerToColor(originalColor);
+    color.brighten(.5);
+    puker.setTint(color.color);
   }
   else if (cursors.right.isDown) {
     pukerSpeed = 2;
-    puker = getChildById(pukerStates, PUKER_STATE_ENUM.puker_running);
-    puker.anims.play('puker_running');
-
+    puker = pukerStates.getChildren()[PUKER_STATE.RUNNING];
+    const anim = game.anims.anims.entries[PUKER_ANIM.RUNNING];
+    puker.anims.play(anim);
   }
   else if (cursors.right.isUp) {
     pukerSpeed = 1;
-    puker = getChildById(pukerStates, PUKER_STATE_ENUM.puker_walking);
-    puker.anims.play('puker_walking');
+    puker = pukerStates.getChildren()[PUKER_STATE.WALKING];
+    const anim = game.anims.anims.entries[PUKER_ANIM.WALKING];
+    puker.anims.play(anim);
   }
 }
 

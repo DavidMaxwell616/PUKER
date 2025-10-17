@@ -6,6 +6,8 @@ var floorMesh;
 const STAGEWIDTH = 800;
 const STAGEHEIGHT = 350;
 const MAX_ITEMS = 9;
+const PUKER_MIN_Y = 205;
+const PUKER_MAX_Y = 368;
 var tileGap = 0;
 var startDepth = 10;
 var floorShadow;
@@ -45,17 +47,29 @@ var splash;
 var powerBar;
 var avatar;
 var puke;
-const PUKER_STATE_ENUM =
-{
-    "puker_bumping": 0,
-    "puker_drinking": 1,
-    "puker_falling": 2,
-    "puker_gagging": 3,
-    "puker_running": 4,
-    "puker_stumbling_1": 5,
-    "puker_stumbling_2": 6,
-    "puker_walking": 7
-};
+var pukeTint;
+var currentPukerState;
+
+const PUKER_STATE = Object.freeze({
+    BUMPING: 0,
+    DRINKING: 1,
+    FALLING: 2,
+    GAGGING: 3,
+    RUNNING: 4,
+    STUMBLING_1: 5,
+    STUMBLING_2: 6,
+    WALKING: 7
+});
+const PUKER_ANIM = Object.freeze({
+    BUMPING: "puker_bumping",
+    DRINKING: "puker_drinking",
+    FALLING: "puker_falling",
+    GAGGING: "puker_gagging",
+    RUNNING: "puker_running",
+    STUMBLING_1: "puker_stumbling_1",
+    STUMBLING_2: "puker_stumbling_2",
+    WALKING: "puker_walking"
+});
 
 const puker_states = [
     {
@@ -70,14 +84,14 @@ const puker_states = [
         name: "puker_drinking",
         width: 188,
         height: 320,
-        frames: 19
+        frames: 14
     },
     {
         id: 2,
         name: "puker_falling",
         width: 226,
         height: 420,
-        frames: 33
+        frames: 19
     },
     {
         id: 3,
