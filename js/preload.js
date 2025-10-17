@@ -3,6 +3,9 @@ function preload() {
     puker_states.forEach(state => {
         this.load.spritesheet(state.name, 'spritesheets/' + state.name + '.png', { frameWidth: state.width, frameHeight: state.height });
     });
+    people_sprites.forEach(person => {
+        this.load.spritesheet(person.name, 'spritesheets/' + person.name + '.png', { frameWidth: person.width, frameHeight: person.height });
+    });
 
     this.load.spritesheet('background items', 'spritesheets/background items.png', { frameWidth: 381, frameHeight: 196 });
     this.load.spritesheet('girl walker', 'spritesheets/girl walking.png', { frameWidth: 168, frameHeight: 218 });
