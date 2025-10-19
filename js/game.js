@@ -83,12 +83,13 @@ function gameCreate(scene) {
     //   //console.log(state.frames, anim.frames, anim.frames.length);
     // }
     newPuker.visible = false;
+    newPuker.setScale(-1, 1);
     newPuker.id = state.id;
     newPuker.name = state.name;
     pukerStates.add(newPuker);
   });
-  puker = pukerStates.getChildren()[PUKER_STATE.WALKING];
-  const anim = game.anims.anims.entries[PUKER_ANIM.WALKING];
+  puker = pukerStates.getChildren()[PUKER_STATE.DRINKING];
+  const anim = game.anims.anims.entries[PUKER_ANIM.DRINKING];
   puker.anims.play(anim);
   puker.visible = true;
   backgroundItemsTimerMax = Phaser.Math.Between(600, 1000);
@@ -149,10 +150,10 @@ function DoBackgroundObjectsStuff(_scene) {
   }
 }
 
-function CheckPukerMove(scene) {
+function CheckPukerMove() {
   if (this.cursors.up.isDown && puker.y > PUKER_MIN_Y) {
     puker.y--;
-    puker.setScale(pukerScale -= .005);
+    puker.setScale(-1, pukerScale -= .005);
     const originalColor = puker.tintTopLeft;
     let color = Phaser.Display.Color.IntegerToColor(originalColor);
     color.brighten(-.5);
@@ -161,7 +162,7 @@ function CheckPukerMove(scene) {
   }
   else if (this.cursors.down.isDown && puker.y < PUKER_MAX_Y) {
     puker.y++;
-    puker.setScale(pukerScale += .005);
+    puker.setScale(-1, pukerScale += .005);
     const originalColor = puker.tintTopLeft;
     let color = Phaser.Display.Color.IntegerToColor(originalColor);
     color.brighten(.5);
@@ -223,7 +224,7 @@ function update() {
   puker.setDepth(1);
   DoWallAndFloorStuff();
   DoBackgroundObjectsStuff(this);
-  CheckPukerMove(this);
+  CheckPukerMove();
   //ShowWalker(this)
 }
 

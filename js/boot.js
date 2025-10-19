@@ -83,7 +83,7 @@ const puker_states = [
         id: 1,
         name: "puker_drinking",
         width: 188,
-        height: 320,
+        height: 240,
         frames: 14
     },
     {
