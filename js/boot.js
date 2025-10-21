@@ -8,6 +8,8 @@ const STAGEHEIGHT = 350;
 const MAX_ITEMS = 9;
 const PUKER_MIN_Y = 205;
 const PUKER_MAX_Y = 368;
+const OBSTACLE_MIN_Y = 205;
+const OBSTACLE_MAX_Y = 468;
 var tileGap = 0;
 var startDepth = 10;
 var floorShadow;
@@ -46,7 +48,7 @@ var pukeMeter;
 var splash;
 var powerBar;
 var avatar;
-var puke;
+var pukeLevel;
 var pukeTint;
 var currentPukerState;
 
@@ -77,56 +79,64 @@ const puker_states = [
         name: "puker_bumping",
         width: 194,
         height: 238,
-        frames: 11
+        frames: 13,
+        repeat: false,
     },
     {
         id: 1,
         name: "puker_drinking",
         width: 188,
         height: 240,
-        frames: 14
+        frames: 19,
+        repeat: false,
     },
     {
         id: 2,
         name: "puker_falling",
         width: 226,
         height: 420,
-        frames: 19
+        frames: 19,
+        repeat: false,
     },
     {
         id: 3,
         name: "puker_gagging",
         width: 182,
         height: 227,
-        frames: 30
+        frames: 31,
+        repeat: false,
     },
     {
         id: 4,
         name: "puker_running",
         width: 209,
         height: 225,
-        frames: 9
+        frames: 9,
+        repeat: true,
     },
     {
         id: 5,
         name: "puker_stumbling_1",
         width: 197,
         height: 240,
-        frames: 16
+        frames: 17,
+        repeat: false,
     },
     {
         id: 6,
         name: "puker_stumbling_2",
         width: 175,
         height: 240,
-        frames: 16
+        frames: 17,
+        repeat: false,
     },
     {
         id: 7,
         name: "puker_walking",
-        width: 166,
-        height: 240,
-        frames: 9
+        width: 172,
+        height: 238,
+        frames: 9,
+        repeat: true,
     }
 ];
 

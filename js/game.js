@@ -62,9 +62,10 @@ function gameCreate(scene) {
   var image = backgroundImages.setFrame(Phaser.Math.Between(0, backgroundImages.frames));
   backgroundItems.add(image);
 
-  const obstacleY = Phaser.Math.Between(386, 600);
+  const obstacleY = Phaser.Math.Between(OBSTACLE_MIN_Y, OBSTACLE_MAX_Y);
   game_consoles = scene.add.sprite(game.config.width, obstacleY, 'game consoles');
   image = game_consoles.setFrame(Phaser.Math.Between(0, 5));
+  image.setDepth(obstacleY);
   obstacles.add(image);
 
   puker_states.forEach(state => {
@@ -77,7 +78,7 @@ function gameCreate(scene) {
           end: state.frames
         }),
       frameRate: 16,
-      repeat: -1
+      repeat: state.repeat ? -1 : 0,
     });
     // if (state.id === 7) {
     //   //console.log(state.frames, anim.frames, anim.frames.length);
@@ -88,14 +89,14 @@ function gameCreate(scene) {
     newPuker.name = state.name;
     pukerStates.add(newPuker);
   });
-  puker = pukerStates.getChildren()[PUKER_STATE.DRINKING];
-  const anim = game.anims.anims.entries[PUKER_ANIM.DRINKING];
+  puker = pukerStates.getChildren()[PUKER_STATE.WALKING];
+  const anim = game.anims.anims.entries[PUKER_ANIM.WALKING];
   puker.anims.play(anim);
   puker.visible = true;
   backgroundItemsTimerMax = Phaser.Math.Between(600, 1000);
   obstaclesTimerMax = Phaser.Math.Between(600, 1000);
   pukeMeter = scene.add.sprite(25, 260, 'pukeMeter').setScale(1.4);
-  puke = scene.add.sprite(27, 450, 'puke').setScale(1.3).setOrigin(.5, 0);
+  pukeLevel = scene.add.sprite(27, 450, 'pukeLevel').setScale(1.3).setOrigin(.5, 0);
   powerBar = scene.add.sprite(game.config.width / 2, game.config.height - 20, 'power bar').setScale(1.3);
   avatar = scene.add.sprite(150, game.config.height - 20, 'avatar');
   cursors = scene.input.keyboard.createCursorKeys();
@@ -123,6 +124,7 @@ function DoBackgroundObjectsStuff(_scene) {
   }
   );
   obstacles.getChildren().forEach((element) => {
+    element.setDepth(1000);
     element.x -= pukerSpeed;
     if (element.x < 0) {
       element.destroy();
@@ -141,7 +143,7 @@ function DoBackgroundObjectsStuff(_scene) {
 
   }
   if (++obstaclesTimer > obstaclesTimerMax) {
-    const obstacleY = Phaser.Math.Between(286, 500);
+    const obstacleY = Phaser.Math.Between(OBSTACLE_MIN_Y, OBSTACLE_MAX_Y);
     const image = scene.add.sprite(game.config.width, obstacleY, 'game consoles')
       .setFrame(Phaser.Math.Between(0, 5));
     obstacles.add(image);
@@ -170,15 +172,23 @@ function CheckPukerMove() {
   }
   else if (cursors.right.isDown) {
     pukerSpeed = 2;
-    puker = pukerStates.getChildren()[PUKER_STATE.RUNNING];
-    const anim = game.anims.anims.entries[PUKER_ANIM.RUNNING];
-    puker.anims.play(anim);
+    if (puker.id != PUKER_STATE.RUNNING) {
+      puker.visible = false;
+      puker = pukerStates.getChildren()[PUKER_STATE.RUNNING];
+      const anim = game.anims.anims.entries[PUKER_ANIM.RUNNING];
+      puker.anims.play(anim);
+      puker.visible = true;
+    }
   }
   else if (cursors.right.isUp) {
     pukerSpeed = 1;
-    puker = pukerStates.getChildren()[PUKER_STATE.WALKING];
-    const anim = game.anims.anims.entries[PUKER_ANIM.WALKING];
-    puker.anims.play(anim);
+    if (puker.id != PUKER_STATE.WALKING) {
+      puker.visible = false;
+      puker = pukerStates.getChildren()[PUKER_STATE.WALKING];
+      const anim = game.anims.anims.entries[PUKER_ANIM.WALKING];
+      puker.anims.play(anim);
+      puker.visible = true;
+    }
   }
 }
 
@@ -217,11 +227,11 @@ function ShowWalker(scene) {
 function update() {
   if (!startGame)
     return;
-  if (puke.y > 40) {
-    puke.y -= .1;
+  if (pukeLevel.y > 40) {
+    pukeLevel.y -= .1;
   }
-  puke.setDepth(1);
-  puker.setDepth(1);
+  pukeLevel.setDepth(1);
+  puker.setDepth(puker.y);
   DoWallAndFloorStuff();
   DoBackgroundObjectsStuff(this);
   CheckPukerMove();
