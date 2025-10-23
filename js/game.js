@@ -80,28 +80,35 @@ function gameCreate(scene) {
       frameRate: 16,
       repeat: state.repeat ? -1 : 0,
     });
-    // if (state.id === 7) {
-    //   //console.log(state.frames, anim.frames, anim.frames.length);
-    // }
     newPuker.visible = false;
     newPuker.setScale(-1, 1);
     newPuker.id = state.id;
     newPuker.name = state.name;
     pukerStates.add(newPuker);
   });
+
+  createNewPerson();
+
   puker = pukerStates.getChildren()[PUKER_STATE.WALKING];
   const anim = game.anims.anims.entries[PUKER_ANIM.WALKING];
   puker.anims.play(anim);
   puker.visible = true;
-  backgroundItemsTimerMax = Phaser.Math.Between(600, 1000);
-  obstaclesTimerMax = Phaser.Math.Between(600, 1000);
+  backgroundItemsTimerMax = Phaser.Math.Between(timeMin, timeMax);
+  obstaclesTimerMax = Phaser.Math.Between(timeMin, timeMax);
   pukeMeter = scene.add.sprite(25, 260, 'pukeMeter').setScale(1.4);
-  pukeLevel = scene.add.sprite(27, 450, 'pukeLevel').setScale(1.3).setOrigin(.5, 0);
+  pukeLevel = scene.add.sprite(27, 500, 'pukeLevel').setScale(1.3).setOrigin(.5, 0);
   powerBar = scene.add.sprite(game.config.width / 2, game.config.height - 20, 'power bar').setScale(1.3);
   avatar = scene.add.sprite(150, game.config.height - 20, 'avatar');
   cursors = scene.input.keyboard.createCursorKeys();
   startGame = true;
 };
+
+function createNewPerson() {
+  const person_index = Phaser.Math.Between(0, people_sprites.length - 1)
+  const personY = Phaser.Math.Between(OBSTACLE_MIN_Y, OBSTACLE_MAX_Y);
+  const newPerson = scene.add.sprite(game.config.width, personY, people_sprites[person_index].name);
+  people.add(newPerson);
+}
 
 function DoWallAndFloorStuff() {
   if (wall.x > -1000)
@@ -124,16 +131,22 @@ function DoBackgroundObjectsStuff(_scene) {
   }
   );
   obstacles.getChildren().forEach((element) => {
-    element.setDepth(1000);
+    element.setDepth(element.y);
     element.x -= pukerSpeed;
     if (element.x < 0) {
       element.destroy();
     }
   }
   );
-  if (avatar.x < 800) {
-    avatar.x += .1;
+  people.getChildren().forEach((element) => {
+    element.setDepth(element.y);
+    element.x -= pukerSpeed;
+    if (element.x < 0) {
+      element.destroy();
+    }
   }
+  );
+
   if (++backgroundItemsTimer > backgroundItemsTimerMax) {
     const image = scene.add.sprite(game.config.width, backgroundItemsY, 'background items')
       .setFrame(Phaser.Math.Between(0, 9));
@@ -149,6 +162,11 @@ function DoBackgroundObjectsStuff(_scene) {
     obstacles.add(image);
     obstaclesTimer = 0;
     obstaclesTimerMax = Phaser.Math.Between(timeMin, timeMax);
+  }
+  if (++peopleTimer > peopleTimerMax) {
+    createNewPerson();
+    peopleTimer = 0;
+    peopleTimerMax = Phaser.Math.Between(timeMin, timeMax);
   }
 }
 
@@ -193,34 +211,33 @@ function CheckPukerMove() {
 }
 
 function ShowWalker(scene) {
-  if (!walkerShowing) {
-    walkerSpeed = Phaser.Math.FloatBetween(0.5, 2);;
-    const walkerStyle = Phaser.Math.Between(0, 0.5);
-    walker = scene.add.sprite(10, backgroundWalkersY, WalkerType[walkerStyle]);
-    const frames = WalkerType[walkerStyle].startsWith('girl') ? 19 : 15;
-    walker.setScale(.8);
-    scene.anims.create({
-      key: 'walking',
-      frames: scene.anims.generateFrameNumbers(WalkerType[walkerStyle],
-        {
-          start: 0,
-          end: frames
-        }),
-      frameRate: 16,
-      repeat: -1
-    });
-    walkerShowing = true;
-    walker.anims.play('walking');
-  }
-  else
-    if (walker.x < screenWidth) {
-      walker.x += walkerSpeed;
-    }
-    else {
-      walker.destroy();
-      scene.anims.destroy('walking');
-      walkerShowing = false;
-    }
+  //   walkerSpeed = Phaser.Math.FloatBetween(0.5, 2);;
+  //   const walkerStyle = Phaser.Math.Between(0, 0.5);
+  //   walker = scene.add.sprite(10, backgroundWalkersY, WalkerType[walkerStyle]);
+  //   const frames = WalkerType[walkerStyle].startsWith('girl') ? 19 : 15;
+  //   walker.setScale(.8);
+  //   scene.anims.create({
+  //     key: 'walking',
+  //     frames: scene.anims.generateFrameNumbers(WalkerType[walkerStyle],
+  //       {
+  //         start: 0,
+  //         end: frames
+  //       }),
+  //     frameRate: 16,
+  //     repeat: -1
+  //   });
+  //   walkerShowing = true;
+  //   walker.anims.play('walking');
+  // }
+  // else
+  //   if (walker.x < screenWidth) {
+  //     walker.x += walkerSpeed;
+  //   }
+  //   else {
+  //     walker.destroy();
+  //     scene.anims.destroy('walking');
+  //     walkerShowing = false;
+  //   }
 }
 
 
@@ -230,12 +247,15 @@ function update() {
   if (pukeLevel.y > 40) {
     pukeLevel.y -= .1;
   }
-  pukeLevel.setDepth(1);
+  if (avatar.x < 800) {
+    avatar.x += pukerSpeed / 10;
+  }
+  pukeLevel.setDepth(1000);
   puker.setDepth(puker.y);
   DoWallAndFloorStuff();
   DoBackgroundObjectsStuff(this);
   CheckPukerMove();
-  //ShowWalker(this)
+  // ShowWalkers(this)
 }
 
 

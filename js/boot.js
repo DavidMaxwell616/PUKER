@@ -33,6 +33,9 @@ var backgroundWalkersTimerMax = 0;
 var backgroundWalkers;
 var backgroundWalkersY = 190;
 var people;
+var peopleTimer = 0;
+var peopleTimerMax = 0;
+
 var obstacles;
 var game_consoles;
 var obstaclesTimer = 0;
@@ -146,34 +149,39 @@ const people_sprites = [
         name: "dude_1",
         width: 16,
         height: 116,
-        frames: 31
+        frames: 31,
+        repeat: false
     },
     {
         id: 1,
         name: "dude_2",
         width: 200,
         height: 240,
-        frames: 36
+        frames: 36,
+        repeat: false
     },
     {
         id: 2,
         name: "dude_3",
         width: 186,
         height: 180,
-        frames: 12
+        frames: 12,
+        repeat: false
     },
     {
         id: 3,
         name: "dude_4",
         width: 220,
         height: 212,
-        frames: 31
+        frames: 31,
+        repeat: false
     },
     {
         id: 4,
         name: "girl",
         width: 171,
         height: 230,
-        frames: 16
+        frames: 16,
+        repeat: false
     }
 ];
