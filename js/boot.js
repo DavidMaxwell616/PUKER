@@ -147,8 +147,8 @@ const people_sprites = [
     {
         id: 0,
         name: "dude_1",
-        width: 16,
-        height: 116,
+        width: 160,
+        height: 226,
         frames: 31,
         repeat: false
     },
@@ -164,7 +164,7 @@ const people_sprites = [
         id: 2,
         name: "dude_3",
         width: 186,
-        height: 180,
+        height: 240,
         frames: 12,
         repeat: false
     },
@@ -185,3 +185,4 @@ const people_sprites = [
         repeat: false
     }
 ];
+
