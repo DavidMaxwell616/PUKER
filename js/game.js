@@ -48,28 +48,28 @@ function gameCreate(scene) {
   //FLOOR SHADOW
   wall = scene.add.sprite(0, 0, 'wall').setOrigin(0, 0).setScale(1.5);
   wall2 = scene.add.sprite(1000, 0, 'wall').setOrigin(0, 0).setScale(1.5);
-  var texture = scene.textures.createCanvas('gradient', game.config.width, floorTextureHeight);
-  const grd = texture.context.createLinearGradient(0, 0, 0, floorTextureHeight);
+  var texture = scene.textures.createCanvas('gradient', game.config.width + OBJECT_START_X_OFFSET, FLOOR_TEXTURE_HEIGHT);
+  const grd = texture.context.createLinearGradient(0, 0, 0, FLOOR_TEXTURE_HEIGHT);
   grd.addColorStop(0, "rgba(0, 0, 0, .7)");
   grd.addColorStop(1, "rgba(0, 0, 0, .01)");
 
   texture.context.fillStyle = grd;
-  texture.context.fillRect(0, 0, game.config.width, floorTextureHeight);
+  texture.context.fillRect(0, 0, game.config.width + 20, FLOOR_TEXTURE_HEIGHT);
   //  Call scene if running under WebGL, or you'll see nothing change
   texture.refresh();
   floorShadow = scene.add.image(500, 386, 'gradient');
-  backgroundImages = scene.add.sprite(game.config.width, backgroundItemsY, 'background items');
+  backgroundImages = scene.add.sprite(game.config.width + OBJECT_START_X_OFFSET, backgroundItemsY, 'background items');
   var image = backgroundImages.setFrame(Phaser.Math.Between(0, backgroundImages.frames));
   backgroundItems.add(image);
 
   const obstacleY = Phaser.Math.Between(OBSTACLE_MIN_Y, OBSTACLE_MAX_Y);
-  game_consoles = scene.add.sprite(game.config.width, obstacleY, 'game consoles');
+  game_consoles = scene.add.sprite(game.config.width + OBJECT_START_X_OFFSET, obstacleY, 'game consoles');
   image = game_consoles.setFrame(Phaser.Math.Between(0, 5));
   image.setDepth(obstacleY);
   obstacles.add(image);
 
   puker_states.forEach(state => {
-    var newPuker = scene.add.sprite(game.config.width * .3, game.config.height * .5, state.name);
+    var newPuker = scene.add.sprite(game.config.width * .3, game.config.height / 2, state.name);
     scene.anims.create({
       key: state.name,
       frames: scene.anims.generateFrameNumbers(state.name,
@@ -87,14 +87,13 @@ function gameCreate(scene) {
     pukerStates.add(newPuker);
   });
 
-  createNewPerson();
-
   puker = pukerStates.getChildren()[PUKER_STATE.WALKING];
   const anim = game.anims.anims.entries[PUKER_ANIM.WALKING];
   puker.anims.play(anim);
   puker.visible = true;
   backgroundItemsTimerMax = Phaser.Math.Between(timeMin, timeMax);
   obstaclesTimerMax = Phaser.Math.Between(timeMin, timeMax);
+  peopleTimerMax = Phaser.Math.Between(timeMin, timeMax);
   pukeMeter = scene.add.sprite(25, 260, 'pukeMeter').setScale(1.4);
   pukeLevel = scene.add.sprite(27, 500, 'pukeLevel').setScale(1.3).setOrigin(.5, 0);
   powerBar = scene.add.sprite(game.config.width / 2, game.config.height - 20, 'power bar').setScale(1.3);
@@ -106,7 +105,7 @@ function gameCreate(scene) {
 function createNewPerson() {
   const person_index = Phaser.Math.Between(0, people_sprites.length - 1)
   const personY = Phaser.Math.Between(OBSTACLE_MIN_Y, OBSTACLE_MAX_Y);
-  const newPerson = scene.add.sprite(game.config.width, personY, people_sprites[person_index].name);
+  const newPerson = scene.add.sprite(game.config.width + OBJECT_START_X_OFFSET, personY, people_sprites[person_index].name);
   people.add(newPerson);
 }
 
@@ -148,7 +147,7 @@ function DoBackgroundObjectsStuff(_scene) {
   );
 
   if (++backgroundItemsTimer > backgroundItemsTimerMax) {
-    const image = scene.add.sprite(game.config.width, backgroundItemsY, 'background items')
+    const image = scene.add.sprite(game.config.width + OBJECT_START_X_OFFSET, backgroundItemsY, 'background items')
       .setFrame(Phaser.Math.Between(0, 9));
     backgroundItems.add(image);
     backgroundItemsTimer = 0;
@@ -157,7 +156,7 @@ function DoBackgroundObjectsStuff(_scene) {
   }
   if (++obstaclesTimer > obstaclesTimerMax) {
     const obstacleY = Phaser.Math.Between(OBSTACLE_MIN_Y, OBSTACLE_MAX_Y);
-    const image = scene.add.sprite(game.config.width, obstacleY, 'game consoles')
+    const image = scene.add.sprite(game.config.width + OBJECT_START_X_OFFSET, obstacleY, 'game consoles')
       .setFrame(Phaser.Math.Between(0, 5));
     obstacles.add(image);
     obstaclesTimer = 0;
@@ -173,20 +172,9 @@ function DoBackgroundObjectsStuff(_scene) {
 function CheckPukerMove() {
   if (this.cursors.up.isDown && puker.y > PUKER_MIN_Y) {
     puker.y--;
-    puker.setScale(-1, pukerScale -= .005);
-    const originalColor = puker.tintTopLeft;
-    let color = Phaser.Display.Color.IntegerToColor(originalColor);
-    color.brighten(-.5);
-    puker.setTint(color.color);
-
   }
   else if (this.cursors.down.isDown && puker.y < PUKER_MAX_Y) {
     puker.y++;
-    puker.setScale(-1, pukerScale += .005);
-    const originalColor = puker.tintTopLeft;
-    let color = Phaser.Display.Color.IntegerToColor(originalColor);
-    color.brighten(.5);
-    puker.setTint(color.color);
   }
   else if (cursors.right.isDown) {
     pukerSpeed = 2;
@@ -197,6 +185,7 @@ function CheckPukerMove() {
       puker.anims.play(anim);
       puker.visible = true;
     }
+
   }
   else if (cursors.right.isUp) {
     pukerSpeed = 1;
@@ -208,6 +197,20 @@ function CheckPukerMove() {
       puker.visible = true;
     }
   }
+  // SetShading(puker);
+  // SetPerspective(puker);
+}
+function SetShading(sprite) {
+  const originalColor = sprite.tintTopLeft;
+  let color = Phaser.Display.Color.IntegerToColor(originalColor);
+  const yPosition = sprite.y - MIDLINE;
+  color.brighten(yPosition / 50);
+  sprite.setTint(color.color);
+}
+
+function SetPerspective(sprite) {
+  const yPosition = sprite.y - MIDLINE;
+  sprite.setScale(-1, 1);
 }
 
 function ShowWalker(scene) {
@@ -247,7 +250,7 @@ function update() {
   if (pukeLevel.y > 40) {
     pukeLevel.y -= .1;
   }
-  if (avatar.x < 800) {
+  if (avatar.x < 900) {
     avatar.x += pukerSpeed / 10;
   }
   pukeLevel.setDepth(1000);
