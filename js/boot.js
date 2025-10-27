@@ -8,6 +8,7 @@ const OBSTACLE_MAX_Y = 468;
 const MIDLINE = 275;
 const FLOOR_TEXTURE_HEIGHT = 300;
 const OBJECT_START_X_OFFSET = 50;
+
 var puker;
 var startGame;
 var wall;
@@ -28,7 +29,6 @@ var isDownDown;
 var pukerScale = 1;
 var pukerSpeed = 1;
 var walkerShowing = false;
-var walker;
 var walkerSpeed = 1;
 var backgroundWalkers = [];
 var backgroundWalkersTimer = 0;
@@ -43,10 +43,12 @@ var obstacles;
 var game_consoles;
 var obstaclesTimer = 0;
 var obstaclesTimerMax;
+var walkersTimer = 0;
+var walkersTimerMax;
 var pukerStates;
 var puker;
 var timeMin = 400;
-var timeMax = 600;
+var timeMax = 1000;
 var cursors;
 var isUpDown;
 var isDownDown;
@@ -189,3 +191,29 @@ const people_sprites = [
     }
 ];
 
+const walker_sprites = [
+    {
+        id: 0,
+        name: "walker_1",
+        width: 150,
+        height: 224,
+        frames: 15,
+        repeat: true,
+    },
+    {
+        id: 1,
+        name: "walker_2",
+        width: 168,
+        height: 220,
+        frames: 20,
+        repeat: true
+    },
+    {
+        id: 2,
+        name: "walker_3",
+        width: 167,
+        height: 230,
+        frames: 16,
+        repeat: true
+    },
+];

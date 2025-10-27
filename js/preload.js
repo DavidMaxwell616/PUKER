@@ -6,11 +6,11 @@ function preload() {
     people_sprites.forEach(person => {
         this.load.spritesheet(person.name, person.name + '.png', { frameWidth: person.width, frameHeight: person.height });
     });
+    walker_sprites.forEach(walker => {
+        this.load.spritesheet(walker.name, walker.name + '.png', { frameWidth: walker.width, frameHeight: walker.height });
+    });
 
     this.load.spritesheet('background items', 'background items.png', { frameWidth: 381, frameHeight: 196 });
-    this.load.spritesheet('girl walker', 'walker_1.png', { frameWidth: 168, frameHeight: 218 });
-    this.load.spritesheet('dude walker', 'walker_2.png', { frameWidth: 168, frameHeight: 218 });
-    this.load.spritesheet('hoodie walker', 'walker_3.png', { frameWidth: 168, frameHeight: 218 });
     this.load.spritesheet('game consoles', 'game consoles.png', { frameWidth: 96, frameHeight: 152 });
     this.load.path = '../assets/images/';
     this.load.image('wall', 'brick wall.png');
