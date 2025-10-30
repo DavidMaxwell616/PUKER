@@ -233,9 +233,15 @@ function DoBackgroundObjectsStuff(_scene) {
 function CheckPukerMove() {
   if (this.cursors.up.isDown && puker.y > PUKER_MIN_Y) {
     puker.y--;
+    pukerStates.getChildren().forEach(element => {
+      element.y = puker.y;
+    });
   }
   else if (this.cursors.down.isDown && puker.y < PUKER_MAX_Y) {
     puker.y++;
+    pukerStates.getChildren().forEach(element => {
+      element.y = puker.y;
+    });
   }
   else if (cursors.right.isDown) {
     pukerSpeed = 2;
