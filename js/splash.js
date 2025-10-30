@@ -1,5 +1,5 @@
 function mainMenuCreate(scene, game) {
-  splash = scene.add.sprite(0, 0, 'splash').setOrigin(0).setScale(.35, .4).setInteractive();
+  splash = scene.add.sprite(0, 0, 'splash1').setOrigin(0).setScale(.35, .4).setInteractive();
   maxxdaddy = scene.add.image(game.config.width * .93, game.config.height * 0.93, 'maxxdaddy');
   splash.on('pointerdown', function (pointer) {
     StartGame();

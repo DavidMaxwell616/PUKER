@@ -17,7 +17,10 @@ function preload() {
     this.load.image('floor', 'floor tile.png');
     this.load.image('pukeMeter', 'pukeMeter.png');
     this.load.image('pukeLevel', 'puke.png');
-    this.load.image('splash', 'splash.png');
+    this.load.image('splash1', 'splash_1.png');
+    this.load.image('splash2', 'splash_2.jpg');
+    this.load.image('splash3', 'splash_3.jpg');
+    this.load.image('splash4', 'splash_4.jpg');
     this.load.image('avatar', 'avatar.png')
     this.load.image('power bar', 'power bar.png')
     //this.load.image('floor', 'images/p2.jpg');

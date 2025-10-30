@@ -8,6 +8,7 @@ const OBSTACLE_MAX_Y = 468;
 const MIDLINE = 275;
 const FLOOR_TEXTURE_HEIGHT = 300;
 const OBJECT_START_X_OFFSET = 50;
+const PUKER_SIZE_FACTOR = 0.8;
 
 var puker;
 var startGame;
@@ -205,7 +206,7 @@ const walker_sprites = [
         name: "walker_2",
         width: 168,
         height: 220,
-        frames: 20,
+        frames: 19,
         repeat: true
     },
     {
