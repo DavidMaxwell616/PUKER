@@ -39,9 +39,12 @@ var backgroundWalkersY = 190;
 var people;
 var peopleTimer = 0;
 var peopleTimerMax = 0;
-
+var pukerPause = false;
+var pukerPauseTimer = 0;
+var pukerPauseTimeMax = 100;
+var puke_sign;
 var obstacles;
-var game_consoles;
+var obstacle_sprites;
 var obstaclesTimer = 0;
 var obstaclesTimerMax;
 var walkersTimer = 0;
