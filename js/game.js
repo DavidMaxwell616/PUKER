@@ -149,9 +149,8 @@ function gameCreate(scene) {
 };
 
 function pukerHitPerson(puker, person) {
-  if (Math.abs(puker.y - person.y) < 20 && Math.abs(puker.x - person.x) < 50) {
-    const anim = game.anims.anims.entries[person.name];
-    person.anims.play(anim);
+  if (Math.abs(puker.y - person.y) < 20 && Math.abs(puker.x + 100 - person.x) < 50) {
+    person.anims.play(person.name, true);
     changePukerState(PUKER_STATE.BUMPING, PUKER_ANIM.BUMPING);
     pukerPause = true;
     pukerSpeed = 0;
@@ -163,8 +162,7 @@ function changePukerState(state, anim) {
     puker.visible = false;
   }
   puker = pukerStates.getChildren()[state];
-  const newAnim = game.anims.anims.entries[anim];
-  puker.anims.play(newAnim);
+  puker.anims.play(puker.name);
   puker.visible = true;
 }
 
@@ -248,7 +246,7 @@ function DoBackgroundObjectsStuff(_scene) {
   if (++walkersTimer > walkersTimerMax) {
     createNewWalker();
     walkersTimer = 0;
-    walkersTimerMaxMax = Phaser.Math.Between(timeMin, timeMax);
+    walkersTimerMaxMax = Phaser.Math.Between(timeMin, timeMax + 1000);
   }
 }
 
@@ -284,7 +282,7 @@ function CheckPukerMove() {
     }
   }
   // SetShading(puker);
-  // SetPerspective(puker);
+  // SetPerspective(p uker);
   // SetBlur(puker);
 }
 function setShading(sprite) {
@@ -296,6 +294,11 @@ function setShading(sprite) {
 }
 
 function setPerspective(sprite) {
+  const yPosition = sprite.y - MIDLINE;
+  sprite.setScale(-1, 1);
+}
+
+function setBlur(sprite) {
   const yPosition = sprite.y - MIDLINE;
   sprite.setScale(-1, 1);
 }

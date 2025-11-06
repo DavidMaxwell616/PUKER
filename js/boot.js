@@ -221,3 +221,24 @@ const walker_sprites = [
         repeat: true
     },
 ];
+
+const startButton = [
+    [565, 369],
+    [821, 352],
+    [828, 408],
+    [568, 423]
+];
+
+const instructionsButton = [
+    [490, 470],
+    [701, 451],
+    [706, 490],
+    [494, 505]
+];
+
+const scoreboardButton = [
+    [723, 450],
+    [898, 463],
+    [898, 503],
+    [719, 490]
+];
