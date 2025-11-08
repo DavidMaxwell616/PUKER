@@ -2,11 +2,15 @@ function mainMenuCreate(scene) {
   game_state = GAME_STATE.INTRO;
   splash = scene.add.sprite(0, 0, 'splash1').setOrigin(0).setScale(.35, .4).setInteractive();
   instructions = scene.add.sprite(0, 0, 'instructions').setOrigin(0).setVisible(false).setScale(1.3, 1.5).setInteractive();
+  scoreboard = scene.add.sprite(0, 0, 'instructions').setOrigin(0).setVisible(false).setScale(1.3, 1.5).setInteractive();
   maxxdaddy = scene.add.image(game.config.width * .93, game.config.height * 0.93, 'maxxdaddy');
   splash.on('pointerdown', function (pointer) {
     SetSplashState(pointer);
   });
   instructions.on('pointerdown', function (pointer) {
+    SetSplashState(pointer);
+  });
+  scoreboard.on('pointerdown', function (pointer) {
     SetSplashState(pointer);
   });
 }
@@ -27,12 +31,20 @@ function SetSplashState(pointer) {
     instructions.visible = true;
   }
   else if (game_state == GAME_STATE.INSTRUCTIONS && Phaser.Geom.Polygon.Contains(exitInstructionsShape, pointer.x, pointer.y)) {
-    console.log(game_state);
     game_state = GAME_STATE.INTRO;
     splash.visible = true;
     instructions.visible = false;
   }
-  else if (Phaser.Geom.Polygon.Contains(scoreboardButtonShape, pointer.x, pointer.y)) {
+  else if (game_state == GAME_STATE.INTRO && Phaser.Geom.Polygon.Contains(scoreboardButtonShape, pointer.x, pointer.y)) {
     maxxdaddy.visible = false;
+    game_state = GAME_STATE.SCOREBOARD;
+    splash.visible = false;
+    instructions.visible = false;
+    scoreboard.visible = true;
+  }
+  else if (game_state == GAME_STATE.SCOREBOARD && Phaser.Geom.Polygon.Contains(exitScoreboardShape, pointer.x, pointer.y)) {
+    game_state = GAME_STATE.INTRO;
+    splash.visible = true;
+    scoreboard.visible = false;
   }
 }
