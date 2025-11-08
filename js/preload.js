@@ -15,6 +15,7 @@ function preload() {
     this.load.spritesheet('puke_sign', 'puke_sign.png', { frameWidth: 47, frameHeight: 20 });
     this.load.path = '../assets/images/';
     this.load.image('wall', 'brick wall.png');
+    this.load.image('instructions', 'instructions.png');
     this.load.image('floor', 'floor tile.png');
     this.load.image('pukeMeter', 'pukeMeter.png');
     this.load.image('pukeLevel', 'puke.png');

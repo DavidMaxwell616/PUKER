@@ -58,11 +58,13 @@ var isUpDown;
 var isDownDown;
 var pukeMeter;
 var splash;
+var instructions;
 var powerBar;
 var avatar;
 var pukeLevel;
 var pukeTint;
 var currentPukerState;
+var game_state;
 
 const PUKER_STATE = Object.freeze({
     BUMPING: 0,
@@ -222,23 +224,40 @@ const walker_sprites = [
     },
 ];
 
-const startButton = [
-    [565, 369],
-    [821, 352],
-    [828, 408],
-    [568, 423]
+const startButtonShape = new Phaser.Geom.Polygon([
+    new Phaser.Geom.Point(565, 369),
+    new Phaser.Geom.Point(821, 352),
+    new Phaser.Geom.Point(828, 408),
+    new Phaser.Geom.Point(568, 423)
+]);
+
+const instructionsButtonShape = new Phaser.Geom.Polygon([
+    new Phaser.Geom.Point(490, 470),
+    new Phaser.Geom.Point(701, 451),
+    new Phaser.Geom.Point(706, 490),
+    new Phaser.Geom.Point(494, 505)
+]);
+
+const scoreboardButtonShape = [
+    new Phaser.Geom.Point(723, 450),
+    new Phaser.Geom.Point(898, 463),
+    new Phaser.Geom.Point(898, 503),
+    new Phaser.Geom.Point(719, 490)
 ];
 
-const instructionsButton = [
-    [490, 470],
-    [701, 451],
-    [706, 490],
-    [494, 505]
-];
+const exitInstructionsShape = new Phaser.Geom.Polygon([
+    new Phaser.Geom.Point(490, 470),
+    new Phaser.Geom.Point(701, 451),
+    new Phaser.Geom.Point(706, 490),
+    new Phaser.Geom.Point(494, 505)
+]);
 
-const scoreboardButton = [
-    [723, 450],
-    [898, 463],
-    [898, 503],
-    [719, 490]
-];
+
+
+const GAME_STATE = Object.freeze({
+    INTRO: 0,
+    INSTRUCTIONS: 1,
+    LEVEL_1: 2,
+    LEVEL_2: 3,
+    LEVEL_3: 4
+});
