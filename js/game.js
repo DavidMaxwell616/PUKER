@@ -64,7 +64,7 @@ function gameCreate(scene) {
   texture.context.fillRect(0, 0, game.config.width + 20, FLOOR_TEXTURE_HEIGHT);
   //  Call scene if running under WebGL, or you'll see nothing change
   texture.refresh();
-  floorShadow = scene.add.image(500, 386, 'gradient');
+  floorShadow = scene.add.image(500, MIDLINE + 100, 'gradient');
   backgroundImages = scene.add.sprite(game.config.width + OBJECT_START_X_OFFSET, backgroundItemsY, 'background items');
   var image = backgroundImages.setFrame(Phaser.Math.Between(0, backgroundImages.frames));
   backgroundItems.add(image);
@@ -74,6 +74,7 @@ function gameCreate(scene) {
   image = obstacle_sprites.setFrame(Phaser.Math.Between(5, obstacle_sprites.frames));
   image.setDepth(obstacleY);
   image.setScale(1.2);
+  image.hit = false;
   obstacles.add(image);
 
   walker_sprites.forEach(sprite => {
@@ -146,23 +147,40 @@ function gameCreate(scene) {
   cursors = scene.input.keyboard.createCursorKeys();
   startGame = true;
   scene.physics.add.collider(puker, people, pukerHitPerson);
+  scene.physics.add.collider(puker, obstacles, pukerHitObstacle);
 };
 
 function pukerHitPerson(puker, person) {
-  if (Math.abs(puker.y - person.y) < 20 && Math.abs(puker.x + 100 - person.x) < 50) {
+  if (!person.hit && Math.abs(puker.y - person.y) < 20 && Math.abs(puker.x + 20 - person.x) < 20) {
+    person.hit = true;
     person.anims.play(person.name, true);
     changePukerState(PUKER_STATE.BUMPING, PUKER_ANIM.BUMPING);
     pukerPause = true;
     pukerSpeed = 0;
+    person.on('animationcomplete', () => {
+      person.setFrame(0);
+      pukerPause = false;
+      pukerSpeed = 1;
+      changePukerState(PUKER_STATE.WALKING, PUKER_ANIM.WALKING);
+    });
   }
 }
+
+function pukerHitObstacle(puker, obstacle) {
+  if (!obstacle.hit && Math.abs(puker.y - obstacle.y) < 20 && Math.abs(puker.x + 20 - obstacle.x) < 20) {
+    obstacle.hit = false;
+    console.log('hit obstacle');
+  }
+}
+
+
 
 function changePukerState(state, anim) {
   if (puker != null) {
     puker.visible = false;
   }
   puker = pukerStates.getChildren()[state];
-  puker.anims.play(puker.name);
+  puker.anims.play(puker.name, true);
   puker.visible = true;
 }
 
@@ -251,34 +269,31 @@ function DoBackgroundObjectsStuff(_scene) {
 }
 
 function CheckPukerMove() {
-  if (this.cursors.up.isDown && puker.y > PUKER_MIN_Y) {
-    puker.y--;
-    pukerStates.getChildren().forEach(element => {
-      element.y = puker.y;
-    });
-  }
-  else if (this.cursors.down.isDown && puker.y < PUKER_MAX_Y) {
-    puker.y++;
-    pukerStates.getChildren().forEach(element => {
-      element.y = puker.y;
-    });
-  }
-  else if (cursors.right.isDown) {
-    if (!pukerPause) {
+  if (!pukerPause) {
+    if (this.cursors.up.isDown && puker.y > PUKER_MIN_Y) {
+      puker.y--;
+      pukerStates.getChildren().forEach(element => {
+        element.y = puker.y;
+      });
+    }
+    else if (this.cursors.down.isDown && puker.y < PUKER_MAX_Y) {
+      puker.y++;
+      pukerStates.getChildren().forEach(element => {
+        element.y = puker.y;
+      });
+    }
+    else if (cursors.right.isDown) {
       pukerSpeed = 2;
-    }
-    if (puker.id != PUKER_STATE.RUNNING) {
-      changePukerState(PUKER_STATE.RUNNING, PUKER_ANIM.RUNNING);
-    }
+      if (puker.id != PUKER_STATE.RUNNING && !pukerPause) {
+        changePukerState(PUKER_STATE.RUNNING, PUKER_ANIM.RUNNING);
+      }
 
-  }
-  else if (cursors.right.isUp) {
-    if (!pukerPause) {
+    }
+    else if (cursors.right.isUp) {
       pukerSpeed = 1;
-    }
-    if (puker.id != PUKER_STATE.WALKING) {
-      changePukerState(PUKER_STATE.WALKING, PUKER_ANIM.WALKING);
-
+      if (puker.id != PUKER_STATE.WALKING && !pukerPause) {
+        changePukerState(PUKER_STATE.WALKING, PUKER_ANIM.WALKING);
+      }
     }
   }
   // SetShading(puker);
@@ -332,5 +347,3 @@ function update() {
   DoBackgroundObjectsStuff(this);
   CheckPukerMove();
 }
-
-

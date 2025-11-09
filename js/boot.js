@@ -5,7 +5,7 @@ const PUKER_MIN_Y = 155;
 const PUKER_MAX_Y = 400;
 const OBSTACLE_MIN_Y = 205;
 const OBSTACLE_MAX_Y = 468;
-const MIDLINE = 275;
+const MIDLINE = 276;
 const FLOOR_TEXTURE_HEIGHT = 300;
 const OBJECT_START_X_OFFSET = 50;
 const PUKER_SIZE_FACTOR = 0.8;
@@ -94,7 +94,7 @@ const puker_states = [
         name: "puker_bumping",
         width: 194,
         height: 238,
-        frames: 13,
+        frames: 12,
         repeat: false,
     },
     {
@@ -162,6 +162,7 @@ const people_sprites = [
         width: 160,
         height: 226,
         frames: 31,
+        hit: false,
         repeat: false
     },
     {
@@ -170,6 +171,7 @@ const people_sprites = [
         width: 200,
         height: 240,
         frames: 36,
+        hit: false,
         repeat: false
     },
     {
@@ -178,6 +180,7 @@ const people_sprites = [
         width: 186,
         height: 240,
         frames: 12,
+        hit: false,
         repeat: false
     },
     {
@@ -186,6 +189,7 @@ const people_sprites = [
         width: 220,
         height: 212,
         frames: 31,
+        hit: false,
         repeat: false
     },
     {
@@ -194,6 +198,7 @@ const people_sprites = [
         width: 171,
         height: 230,
         frames: 16,
+        hit: false,
         repeat: false
     }
 ];
