@@ -64,14 +64,15 @@ function gameCreate(scene) {
   texture.context.fillRect(0, 0, game.config.width + 20, FLOOR_TEXTURE_HEIGHT);
   //  Call scene if running under WebGL, or you'll see nothing change
   texture.refresh();
-  floorShadow = scene.add.image(500, MIDLINE + 100, 'gradient');
+  floorShadow = scene.add.image(500, MIDLINE, 'gradient');
   backgroundImages = scene.add.sprite(game.config.width + OBJECT_START_X_OFFSET, backgroundItemsY, 'background items');
   var image = backgroundImages.setFrame(Phaser.Math.Between(0, backgroundImages.frames));
   backgroundItems.add(image);
 
   const obstacleY = Phaser.Math.Between(OBSTACLE_MIN_Y, OBSTACLE_MAX_Y);
   obstacle_sprites = scene.add.sprite(game.config.width + OBJECT_START_X_OFFSET, obstacleY, 'obstacle_sprites');
-  image = obstacle_sprites.setFrame(Phaser.Math.Between(5, obstacle_sprites.frames));
+  const frame = Phaser.Math.Between(0, obstacle_sprites.frames);
+  image = obstacle_sprites.setFrame(frame).setOrigin(.5, 1);
   image.setDepth(obstacleY);
   image.setScale(1.2);
   image.hit = false;
@@ -103,7 +104,7 @@ function gameCreate(scene) {
   });
 
   puker_states.forEach(state => {
-    var newPuker = scene.add.sprite(game.config.width * .3, game.config.height / 2, state.name);
+    var newPuker = scene.add.sprite(game.config.width * .3, game.config.height * .7, state.name);
     scene.anims.create({
       key: state.name,
       frames: scene.anims.generateFrameNumbers(state.name,
@@ -116,6 +117,7 @@ function gameCreate(scene) {
     });
     newPuker.visible = false;
     newPuker.setScale(-1 * PUKER_SIZE_FACTOR, 1 * PUKER_SIZE_FACTOR);
+    newPuker.setOrigin(.5, 1);
     newPuker.id = state.id;
     newPuker.name = state.name;
     pukerStates.add(newPuker);
@@ -161,6 +163,7 @@ function pukerHitPerson(puker, person) {
       person.setFrame(0);
       pukerPause = false;
       pukerSpeed = 1;
+      person.x += 60;
       changePukerState(PUKER_STATE.WALKING, PUKER_ANIM.WALKING);
     });
   }
@@ -168,12 +171,9 @@ function pukerHitPerson(puker, person) {
 
 function pukerHitObstacle(puker, obstacle) {
   if (!obstacle.hit && Math.abs(puker.y - obstacle.y) < 20 && Math.abs(puker.x + 20 - obstacle.x) < 20) {
-    obstacle.hit = false;
-    console.log('hit obstacle');
+    obstacle.hit = true;
   }
 }
-
-
 
 function changePukerState(state, anim) {
   if (puker != null) {
@@ -189,7 +189,12 @@ function createNewPerson() {
   const personY = Phaser.Math.Between(OBSTACLE_MIN_Y, OBSTACLE_MAX_Y);
   const personName = people_sprites[person_index].name;
   const newPerson = scene.add.sprite(game.config.width + OBJECT_START_X_OFFSET, personY, personName);
+  newPerson.setOrigin(.5, 1);
+  newPerson.setScale(-1, 1);
   newPerson.name = personName;
+  setShading(newPerson);
+  setPerspective(newPerson);
+  setBlur(newPerson);
   people.add(newPerson);
 }
 
@@ -249,9 +254,12 @@ function DoBackgroundObjectsStuff(_scene) {
   }
   if (++obstaclesTimer > obstaclesTimerMax) {
     const obstacleY = Phaser.Math.Between(OBSTACLE_MIN_Y, OBSTACLE_MAX_Y);
+    const frame = Phaser.Math.Between(0, 9);
     const image = scene.add.sprite(game.config.width + OBJECT_START_X_OFFSET, obstacleY, 'obstacle_sprites')
-      .setFrame(Phaser.Math.Between(0, 9)).setScale(1.2);
-
+      .setFrame(frame);
+    setShading(image);
+    setPerspective(image);
+    setBlur(image);
     obstacles.add(image);
     obstaclesTimer = 0;
     obstaclesTimerMax = Phaser.Math.Between(timeMin, timeMax);
@@ -275,12 +283,18 @@ function CheckPukerMove() {
       pukerStates.getChildren().forEach(element => {
         element.y = puker.y;
       });
+      setShading(puker);
+      setPerspective(puker);
+      setBlur(puker);
     }
     else if (this.cursors.down.isDown && puker.y < PUKER_MAX_Y) {
       puker.y++;
       pukerStates.getChildren().forEach(element => {
         element.y = puker.y;
       });
+      setShading(puker);
+      setPerspective(puker);
+      setBlur(puker);
     }
     else if (cursors.right.isDown) {
       pukerSpeed = 2;
@@ -296,9 +310,6 @@ function CheckPukerMove() {
       }
     }
   }
-  // SetShading(puker);
-  // SetPerspective(p uker);
-  // SetBlur(puker);
 }
 function setShading(sprite) {
   const originalColor = sprite.tintTopLeft;
@@ -309,13 +320,13 @@ function setShading(sprite) {
 }
 
 function setPerspective(sprite) {
-  const yPosition = sprite.y - MIDLINE;
-  sprite.setScale(-1, 1);
+  const resize = sprite.y / 500;
+  sprite.setScale(-1 * resize, resize);
 }
 
 function setBlur(sprite) {
-  const yPosition = sprite.y - MIDLINE;
-  sprite.setScale(-1, 1);
+  //const yPosition = sprite.y - MIDLINE;
+  //sprite.setScale(-1, 1);
 }
 
 function createNewWalker() {

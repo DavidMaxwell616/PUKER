@@ -1,14 +1,17 @@
 const STAGEWIDTH = 800;
 const STAGEHEIGHT = 350;
 const MAX_ITEMS = 9;
-const PUKER_MIN_Y = 155;
-const PUKER_MAX_Y = 400;
-const OBSTACLE_MIN_Y = 205;
+const PUKER_MIN_Y = 275;
+const PUKER_MAX_Y = 500;
+const OBSTACLE_MIN_Y = 275;
 const OBSTACLE_MAX_Y = 468;
-const MIDLINE = 276;
+const MIDLINE = 385
 const FLOOR_TEXTURE_HEIGHT = 300;
 const OBJECT_START_X_OFFSET = 50;
 const PUKER_SIZE_FACTOR = 0.8;
+const MAX_DISTANCE = 500;
+const MIN_TINT = 0xFFFFFF; // White
+const MAX_TINT = 0x000000; // Black
 
 var puker;
 var startGame;
@@ -77,6 +80,20 @@ const PUKER_STATE = Object.freeze({
     STUMBLING_2: 6,
     WALKING: 7
 });
+
+const OBSTACLE_TYPE = Object.freeze({
+    GAME_CONSOLE_1: 0,
+    GAME_CONSOLE_2: 1,
+    GAME_CONSOLE_3: 2,
+    GAME_CONSOLE_4: 3,
+    GAME_CONSOLE_5: 4,
+    GAME_CONSOLE_6: 5,
+    GAME_CONSOLE_7: 6,
+    TABLE: 7,
+    CHAIR: 8,
+    WATER: 9
+});
+
 const PUKER_ANIM = Object.freeze({
     BUMPING: "puker_bumping",
     DRINKING: "puker_drinking",
