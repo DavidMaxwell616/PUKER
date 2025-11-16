@@ -176,8 +176,8 @@ const people_sprites = [
     {
         id: 0,
         name: "dude_1",
-        width: 160,
-        height: 226,
+        width: 170,
+        height: 240,
         frames: 31,
         hit: false,
         repeat: false
@@ -203,8 +203,8 @@ const people_sprites = [
     {
         id: 3,
         name: "dude_4",
-        width: 220,
-        height: 212,
+        width: 249,
+        height: 240,
         frames: 31,
         hit: false,
         repeat: false
@@ -212,8 +212,8 @@ const people_sprites = [
     {
         id: 4,
         name: "girl",
-        width: 171,
-        height: 230,
+        width: 178,
+        height: 240,
         frames: 16,
         hit: false,
         repeat: false
@@ -224,24 +224,24 @@ const walker_sprites = [
     {
         id: 0,
         name: "walker_1",
-        width: 150,
-        height: 224,
+        width: 161,
+        height: 240,
         frames: 15,
         repeat: true,
     },
     {
         id: 1,
         name: "walker_2",
-        width: 168,
-        height: 220,
+        width: 183,
+        height: 240,
         frames: 19,
         repeat: true
     },
     {
         id: 2,
         name: "walker_3",
-        width: 167,
-        height: 230,
+        width: 173,
+        height: 240,
         frames: 16,
         repeat: true
     },

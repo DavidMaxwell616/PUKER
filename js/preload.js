@@ -11,7 +11,7 @@ function preload() {
     });
 
     this.load.spritesheet('background items', 'background items.png', { frameWidth: 381, frameHeight: 196 });
-    this.load.spritesheet('obstacle_sprites', 'obstacles.png', { frameWidth: 96, frameHeight: 152 });
+    this.load.spritesheet('obstacle_sprites', 'obstacles.png', { frameWidth: 150, frameHeight: 240 });
     this.load.spritesheet('puke_sign', 'puke_sign.png', { frameWidth: 47, frameHeight: 20 });
     this.load.path = '../assets/images/';
     this.load.image('wall', 'brick wall.png');
