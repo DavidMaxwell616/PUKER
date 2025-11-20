@@ -16,7 +16,12 @@ function preload() {
     this.load.path = '../assets/images/';
     this.load.image('wall', 'brick wall.png');
     this.load.image('instructions', 'instructions.png');
-    this.load.image('floor', 'floor tile.png');
+    this.load.image('scoreboard', 'scoreboard.png');
+    this.load.image('floor 1', 'floor 1.png');
+    this.load.image('floor 2', 'floor 2.png');
+    this.load.image('floor 3', 'floor 3.png');
+    this.load.image('floor 4', 'floor 4.jpg');
+    this.load.image('maxxdaddy', 'maxxdaddy.gif');
     this.load.image('pukeMeter', 'pukeMeter.png');
     this.load.image('pukeLevel', 'puke.png');
     this.load.image('splash1', 'splash_1.png');

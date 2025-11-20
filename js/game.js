@@ -44,14 +44,14 @@ function gameCreate(scene) {
   pukerStates = scene.physics.add.group();
   walkers = scene.physics.add.group();
 
-  floor = scene.add.plane(game.config.width / 2, 336, 'floor');
-  floor.createCheckerboard();
+  floor = scene.add.plane(game.config.width / 2, 336, 'floor 1');
+  //floor.createCheckerboard();
   floor.setGridSize(16, 16);
   floor.uvScale(16, 16);
   floor.viewPosition.z = 1.6;
   floor.rotateX = 285;
   floor.setScale(1.6);
-  //floor.visible = false;   
+  //floor.visible = false;
   //FLOOR SHADOW
   wall = scene.add.sprite(0, 0, 'wall').setOrigin(0, 0).setScale(1.5);
   wall2 = scene.add.sprite(1000, 0, 'wall').setOrigin(0, 0).setScale(1.5);
@@ -185,16 +185,16 @@ function changePukerState(state, anim) {
 }
 
 function createNewPerson() {
-  const person_index = Phaser.Math.Between(0, people_sprites.length - 1)
+  const person_index = Phaser.Math.Between(0, people_sprites.length - 1);
+  const person_direction = Phaser.Math.Between(1, 2);
   const personY = Phaser.Math.Between(OBSTACLE_MIN_Y, OBSTACLE_MAX_Y);
   const personName = people_sprites[person_index].name;
   const newPerson = scene.add.sprite(game.config.width + OBJECT_START_X_OFFSET, personY, personName);
   newPerson.setOrigin(.5, 1);
-  newPerson.setScale(-1, 1);
+  newPerson.setScale(person_direction == 1 ? 1 : -1, 1);
   newPerson.name = personName;
   setShading(newPerson);
   setPerspective(newPerson);
-  setBlur(newPerson);
   people.add(newPerson);
 }
 
@@ -259,7 +259,6 @@ function DoBackgroundObjectsStuff(_scene) {
       .setFrame(frame);
     setShading(image);
     setPerspective(image);
-    setBlur(image);
     obstacles.add(image);
     obstaclesTimer = 0;
     obstaclesTimerMax = Phaser.Math.Between(timeMin, timeMax);
@@ -285,7 +284,6 @@ function CheckPukerMove() {
       });
       setShading(puker);
       setPerspective(puker);
-      setBlur(puker);
     }
     else if (this.cursors.down.isDown && puker.y < PUKER_MAX_Y) {
       puker.y++;
@@ -294,7 +292,6 @@ function CheckPukerMove() {
       });
       setShading(puker);
       setPerspective(puker);
-      setBlur(puker);
     }
     else if (cursors.right.isDown) {
       pukerSpeed = 2;
@@ -312,21 +309,35 @@ function CheckPukerMove() {
   }
 }
 function setShading(sprite) {
-  const originalColor = sprite.tintTopLeft;
-  let color = Phaser.Display.Color.IntegerToColor(originalColor);
-  const yPosition = sprite.y - MIDLINE;
-  color.brighten(yPosition / 50);
-  sprite.setTint(color.color);
+  const gameHeight = game.config.height;
+  const playerY = sprite.y;
+  const normalizedY = playerY / gameHeight;
+  const startColor = new Phaser.Display.Color(0, 0, 0);
+  const endColor = new Phaser.Display.Color(255, 255, 255);
+  const interpolatedColor = Phaser.Display.Color.Interpolate.ColorWithColor(
+    startColor,
+    endColor,
+    100, // Length
+    normalizedY * 100 // Index
+  );
+  const tintValue = Phaser.Display.Color.GetColor(
+    interpolatedColor.r,
+    interpolatedColor.g,
+    interpolatedColor.b
+  );
+
+  sprite.setTint(tintValue);
 }
 
 function setPerspective(sprite) {
-  const resize = sprite.y / 500;
-  sprite.setScale(-1 * resize, resize);
-}
-
-function setBlur(sprite) {
-  //const yPosition = sprite.y - MIDLINE;
-  //sprite.setScale(-1, 1);
+  const minY = 100;
+  const maxY = 500;
+  const minScale = 0.5;
+  const maxScale = 1;
+  const normalizedY = Phaser.Math.Clamp((sprite.y - minY) / (maxY - minY), 0, 1);
+  const newScale = minScale + (maxScale - minScale) * normalizedY;
+  const xScale = sprite.scaleX < 0 ? -1 : 1;
+  sprite.setScale(xScale * newScale, newScale);
 }
 
 function createNewWalker() {

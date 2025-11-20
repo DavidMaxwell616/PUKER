@@ -248,31 +248,31 @@ const walker_sprites = [
 ];
 
 const startButtonShape = new Phaser.Geom.Polygon([
-    new Phaser.Geom.Point(565, 369),
-    new Phaser.Geom.Point(821, 352),
-    new Phaser.Geom.Point(828, 408),
-    new Phaser.Geom.Point(568, 423)
+    new Phaser.Geom.Point(560, 352),
+    new Phaser.Geom.Point(815, 335),
+    new Phaser.Geom.Point(823, 392),
+    new Phaser.Geom.Point(563, 408)
 ]);
 
 const instructionsButtonShape = new Phaser.Geom.Polygon([
-    new Phaser.Geom.Point(490, 470),
-    new Phaser.Geom.Point(701, 451),
-    new Phaser.Geom.Point(706, 490),
-    new Phaser.Geom.Point(494, 505)
+    new Phaser.Geom.Point(485, 450),
+    new Phaser.Geom.Point(693, 435),
+    new Phaser.Geom.Point(702, 475),
+    new Phaser.Geom.Point(490, 490)
 ]);
 
 const scoreboardButtonShape = new Phaser.Geom.Polygon([
-    new Phaser.Geom.Point(723, 450),
-    new Phaser.Geom.Point(898, 463),
-    new Phaser.Geom.Point(898, 503),
-    new Phaser.Geom.Point(719, 490)
+    new Phaser.Geom.Point(715, 434),
+    new Phaser.Geom.Point(893, 446),
+    new Phaser.Geom.Point(895, 485),
+    new Phaser.Geom.Point(715, 470)
 ]);
 
 const exitInstructionsShape = new Phaser.Geom.Polygon([
-    new Phaser.Geom.Point(490, 470),
-    new Phaser.Geom.Point(701, 451),
-    new Phaser.Geom.Point(706, 490),
-    new Phaser.Geom.Point(494, 505)
+    new Phaser.Geom.Point(558, 435),
+    new Phaser.Geom.Point(650, 428),
+    new Phaser.Geom.Point(655, 465),
+    new Phaser.Geom.Point(558, 475)
 ]);
 
 const GAME_STATE = Object.freeze({
@@ -285,8 +285,9 @@ const GAME_STATE = Object.freeze({
 });
 
 const exitScoreboardShape = new Phaser.Geom.Polygon([
-    new Phaser.Geom.Point(490, 470),
-    new Phaser.Geom.Point(701, 451),
-    new Phaser.Geom.Point(706, 490),
-    new Phaser.Geom.Point(494, 505)
+    new Phaser.Geom.Point(890, 447),
+    new Phaser.Geom.Point(986, 442),
+    new Phaser.Geom.Point(986, 491),
+    new Phaser.Geom.Point(885, 485)
 ]);
+

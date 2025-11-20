@@ -1,9 +1,10 @@
 function mainMenuCreate(scene) {
   game_state = GAME_STATE.INTRO;
-  splash = scene.add.sprite(0, 0, 'splash1').setOrigin(0).setScale(.35, .4).setInteractive();
-  instructions = scene.add.sprite(0, 0, 'instructions').setOrigin(0).setVisible(false).setScale(1.3, 1.5).setInteractive();
-  scoreboard = scene.add.sprite(0, 0, 'instructions').setOrigin(0).setVisible(false).setScale(1.3, 1.5).setInteractive();
+  splash = scene.add.sprite(0, 0, 'splash1').setOrigin(0).setInteractive().setDisplaySize(game.config.width, game.config.height);
+  instructions = scene.add.sprite(0, 0, 'instructions').setOrigin(0).setVisible(false).setInteractive().setDisplaySize(game.config.width, game.config.height);
+  scoreboard = scene.add.sprite(0, 0, 'scoreboard').setOrigin(0).setVisible(false).setInteractive().setDisplaySize(game.config.width, game.config.height);
   maxxdaddy = scene.add.image(game.config.width * .93, game.config.height * 0.93, 'maxxdaddy');
+
   splash.on('pointerdown', function (pointer) {
     SetSplashState(pointer);
   });
