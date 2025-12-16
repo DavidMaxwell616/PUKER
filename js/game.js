@@ -69,14 +69,7 @@ function gameCreate(scene) {
   var image = backgroundImages.setFrame(Phaser.Math.Between(0, backgroundImages.frames));
   backgroundItems.add(image);
 
-  const obstacleY = Phaser.Math.Between(OBSTACLE_MIN_Y, OBSTACLE_MAX_Y);
-  obstacle_sprites = scene.add.sprite(game.config.width + OBJECT_START_X_OFFSET, obstacleY, 'obstacle_sprites');
-  const frame = Phaser.Math.Between(0, obstacle_sprites.frames);
-  image = obstacle_sprites.setFrame(frame).setOrigin(.5, 1);
-  image.setDepth(obstacleY);
-  image.setScale(1.2);
-  image.hit = false;
-  obstacles.add(image);
+  createNewObstacle();
 
   walker_sprites.forEach(sprite => {
     scene.anims.create({
@@ -125,7 +118,7 @@ function gameCreate(scene) {
 
 
   changePukerState(PUKER_STATE.WALKING, PUKER_ANIM.WALKING);
-  backgroundItemsTimerMax = Phaser.Math.Between(timeMin, timeMax);
+  backgroundItemsTimerMax = Phaser.Math.Between(timeMin, timeMax / 2);
   obstaclesTimerMax = Phaser.Math.Between(timeMin, timeMax);
   peopleTimerMax = Phaser.Math.Between(timeMin, timeMax);
   walkersTimerMax = Phaser.Math.Between(timeMin, timeMax);
@@ -170,20 +163,57 @@ function pukerHitPerson(puker, person) {
 }
 
 function pukerHitObstacle(puker, obstacle) {
-  if (!obstacle.hit && Math.abs(puker.y - obstacle.y) < 20 && Math.abs(puker.x + 20 - obstacle.x) < 20) {
-    obstacle.hit = true;
+  if (obstacle.id === OBSTACLE_TYPE.WATER &&
+    Math.abs(obstacle.x - puker.x) < 50 &&
+    Math.abs(obstacle.y - puker.y) < 150) {
+    obstacle.destroy();
+    pukerPause = true;
+    pukerSpeed = 0;
+    changePukerState(PUKER_STATE.DRINKING, PUKER_ANIM.DRINKING);
   }
+
+  // if (!obstacle.hit && Math.abs(puker.y - obstacle.y) < 20 && Math.abs(puker.x + 10 - obstacle.x) < 10) {
+  //   switch (obstacle.id) {
+  //     case OBSTACLE_TYPE.WATER:
+  //       console.log('hit water');
+  //       changePukerState(PUKER_STATE.DRINKING, PUKER_ANIM.DRINKING);
+  //       obstacle.destroy();
+  //       pukerPause = true;
+  //       pukerSpeed = 0;
+  //       // puker.on('animationcomplete', () => {
+  //       //   pukerPause = false;
+  //       //   pukerSpeed = 1;
+  //       //   changePukerState(PUKER_STATE.WALKING, PUKER_ANIM.WALKING);
+  //       // });
+  //       console.log(puker.anims.currentAnim);
+
+  //       break;
+
+  //     default:
+  //       break;
+  //   }
+  // }
 }
 
 function changePukerState(state, anim) {
   if (puker != null) {
+    puker.anims.stop();
     puker.visible = false;
   }
   puker = pukerStates.getChildren()[state];
-  puker.anims.play(puker.name, true);
+  puker.play(anim, true);
   puker.visible = true;
-}
 
+  if (puker.anims.currentAnim.key == PUKER_ANIM.DRINKING) {
+    puker.on('animationcomplete', () => {
+      pukerPause = false;
+      pukerSpeed = 1;
+      changePukerState(PUKER_STATE.WALKING, PUKER_ANIM.WALKING);
+      pukeLevel.y += 10;
+    });
+  }
+
+}
 function createNewPerson() {
   const person_index = Phaser.Math.Between(0, people_sprites.length - 1);
   const person_direction = Phaser.Math.Between(1, 2);
@@ -191,11 +221,13 @@ function createNewPerson() {
   const personName = people_sprites[person_index].name;
   const newPerson = scene.add.sprite(game.config.width + OBJECT_START_X_OFFSET, personY, personName);
   newPerson.setOrigin(.5, 1);
-  newPerson.setScale(person_direction == 1 ? 1 : -1, 1);
+  //newPerson.setScale(person_direction == 1 ? 1 : -1, 1);
   newPerson.name = personName;
   setShading(newPerson);
   setPerspective(newPerson);
   people.add(newPerson);
+  peopleTimer = 0;
+  peopleTimerMax = Phaser.Math.Between(timeMin, timeMax);
 }
 
 function DoWallAndFloorStuff() {
@@ -249,29 +281,17 @@ function DoBackgroundObjectsStuff(_scene) {
       .setFrame(Phaser.Math.Between(0, 9));
     backgroundItems.add(image);
     backgroundItemsTimer = 0;
-    backgroundItemsTimerMax = Phaser.Math.Between(timeMin, timeMax);
+    backgroundItemsTimerMax = Phaser.Math.Between(timeMin, timeMax / 2);
 
   }
   if (++obstaclesTimer > obstaclesTimerMax) {
-    const obstacleY = Phaser.Math.Between(OBSTACLE_MIN_Y, OBSTACLE_MAX_Y);
-    const frame = Phaser.Math.Between(0, 9);
-    const image = scene.add.sprite(game.config.width + OBJECT_START_X_OFFSET, obstacleY, 'obstacle_sprites')
-      .setFrame(frame);
-    setShading(image);
-    setPerspective(image);
-    obstacles.add(image);
-    obstaclesTimer = 0;
-    obstaclesTimerMax = Phaser.Math.Between(timeMin, timeMax);
+    createNewObstacle();
   }
   if (++peopleTimer > peopleTimerMax) {
     createNewPerson();
-    peopleTimer = 0;
-    peopleTimerMax = Phaser.Math.Between(timeMin, timeMax);
   }
   if (++walkersTimer > walkersTimerMax) {
     createNewWalker();
-    walkersTimer = 0;
-    walkersTimerMaxMax = Phaser.Math.Between(timeMin, timeMax + 1000);
   }
 }
 
@@ -344,11 +364,29 @@ function createNewWalker() {
   const walker_index = Phaser.Math.Between(0, 2)
   const newWalker = scene.add.sprite(game.config.width + OBJECT_START_X_OFFSET, backgroundWalkersY, walker_sprites[walker_index].name);
   const anim = game.anims.anims.entries[walker_sprites[walker_index].name];
-  newWalker.walkerSpeed = Phaser.Math.FloatBetween(1, 2);;
-  anim.frameRate = newWalker.walkerSpeed * 8;
+  newWalker.walkerSpeed = 1;
   newWalker.setScale(-1, .8);
   newWalker.anims.play(anim);
   walkers.add(newWalker);
+  walkersTimer = 0;
+  walkersTimerMax = Phaser.Math.Between(timeMin, timeMax + 500);
+}
+
+function createNewObstacle() {
+  const obstacleY = Phaser.Math.Between(OBSTACLE_MIN_Y, OBSTACLE_MAX_Y);
+  var frame = 9;// Phaser.Math.Between(0, 15);
+  //if (frame > 8) frame = 9;
+  const image = scene.add.sprite(game.config.width + OBJECT_START_X_OFFSET, obstacleY, 'obstacle_sprites')
+    .setFrame(frame).setDepth(obstacleY);
+  setShading(image);
+  setPerspective(image);
+  const keysArray = Object.keys(OBSTACLE_TYPE);
+  image.id = frame;
+  image.name = keysArray[frame];
+  image.hit = false;
+  obstacles.add(image);
+  obstaclesTimer = 0;
+  obstaclesTimerMax = Phaser.Math.Between(timeMin, timeMax);
 }
 
 function update() {

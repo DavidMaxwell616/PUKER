@@ -36,7 +36,6 @@ var walkerShowing = false;
 var walkerSpeed = 1;
 var backgroundWalkers = [];
 var backgroundWalkersTimer = 0;
-var backgroundWalkersTimerMax = 0;
 var backgroundWalkers;
 var backgroundWalkersY = 190;
 var people;
@@ -119,7 +118,7 @@ const puker_states = [
         name: "puker_drinking",
         width: 188,
         height: 240,
-        frames: 19,
+        frames: 18,
         repeat: false,
     },
     {
