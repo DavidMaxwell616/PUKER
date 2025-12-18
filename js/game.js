@@ -12,7 +12,7 @@ const config = {
   physics: {
     default: 'arcade',
     arcade: {
-      debug: false
+      debug: true
     }
   },
   dom: {
@@ -43,6 +43,7 @@ function gameCreate(scene) {
   people = scene.physics.add.group();
   pukerStates = scene.physics.add.group();
   walkers = scene.physics.add.group();
+  waters = scene.physics.add.group();
 
   floor = scene.add.plane(game.config.width / 2, 336, 'floor 1');
   //floor.createCheckerboard();
@@ -109,7 +110,7 @@ function gameCreate(scene) {
       repeat: state.repeat ? -1 : 0,
     });
     newPuker.visible = false;
-    newPuker.setScale(-1 * PUKER_SIZE_FACTOR, 1 * PUKER_SIZE_FACTOR);
+    newPuker.flipX = true;
     newPuker.setOrigin(.5, 1);
     newPuker.id = state.id;
     newPuker.name = state.name;
@@ -122,6 +123,7 @@ function gameCreate(scene) {
   obstaclesTimerMax = Phaser.Math.Between(timeMin, timeMax);
   peopleTimerMax = Phaser.Math.Between(timeMin, timeMax);
   walkersTimerMax = Phaser.Math.Between(timeMin, timeMax);
+  waterTimerMax = Phaser.Math.Between(timeMin, timeMax);
   pukeMeter = scene.add.sprite(25, 260, 'pukeMeter').setScale(1.4);
   pukeLevel = scene.add.sprite(27, 500, 'pukeLevel').setScale(1.3).setOrigin(.5, 0);
   puke_sign = scene.add.sprite(25, 15, 'puke_sign');
@@ -143,13 +145,20 @@ function gameCreate(scene) {
   startGame = true;
   scene.physics.add.collider(puker, people, pukerHitPerson);
   scene.physics.add.collider(puker, obstacles, pukerHitObstacle);
+  scene.physics.add.collider(puker, waters, pukerHitWater);
 };
 
 function pukerHitPerson(puker, person) {
   if (!person.hit && Math.abs(puker.y - person.y) < 20 && Math.abs(puker.x + 20 - person.x) < 20) {
     person.hit = true;
     person.anims.play(person.name, true);
-    changePukerState(PUKER_STATE.BUMPING, PUKER_ANIM.BUMPING);
+    const anims = [0, 0, 0, 0];
+    const randomIndex = Math.floor(Math.random() * anims.length);
+    const anim = Object.keys(PUKER_STATE).find(
+      key => PUKER_STATE[key] === randomIndex
+    );
+    console.log(randomIndex, anim);
+    changePukerState(randomIndex, PUKER_ANIM[anim]);
     pukerPause = true;
     pukerSpeed = 0;
     person.on('animationcomplete', () => {
@@ -162,15 +171,16 @@ function pukerHitPerson(puker, person) {
   }
 }
 
-function pukerHitObstacle(puker, obstacle) {
-  if (obstacle.id === OBSTACLE_TYPE.WATER &&
-    Math.abs(obstacle.x - puker.x) < 50 &&
-    Math.abs(obstacle.y - puker.y) < 150) {
-    obstacle.destroy();
+function pukerHitWater(puker, water) {
+  if (Math.abs(puker.depth - water.depth) < 50) {
+    water.destroy();
     pukerPause = true;
     pukerSpeed = 0;
     changePukerState(PUKER_STATE.DRINKING, PUKER_ANIM.DRINKING);
   }
+}
+
+function pukerHitObstacle(puker, obstacle) {
 
   // if (!obstacle.hit && Math.abs(puker.y - obstacle.y) < 20 && Math.abs(puker.x + 10 - obstacle.x) < 10) {
   //   switch (obstacle.id) {
@@ -203,7 +213,6 @@ function changePukerState(state, anim) {
   puker = pukerStates.getChildren()[state];
   puker.play(anim, true);
   puker.visible = true;
-
   if (puker.anims.currentAnim.key == PUKER_ANIM.DRINKING) {
     puker.on('animationcomplete', () => {
       pukerPause = false;
@@ -259,6 +268,14 @@ function DoBackgroundObjectsStuff(_scene) {
     }
   }
   );
+  waters.getChildren().forEach((element) => {
+    element.setDepth(element.y);
+    element.x -= pukerSpeed;
+    if (element.x < 0) {
+      element.destroy();
+    }
+  }
+  );
   people.getChildren().forEach((element) => {
     element.setDepth(element.y);
     element.x -= pukerSpeed;
@@ -286,6 +303,9 @@ function DoBackgroundObjectsStuff(_scene) {
   }
   if (++obstaclesTimer > obstaclesTimerMax) {
     createNewObstacle();
+  }
+  if (++waterTimer > waterTimerMax) {
+    createNewWater();
   }
   if (++peopleTimer > peopleTimerMax) {
     createNewPerson();
@@ -374,8 +394,7 @@ function createNewWalker() {
 
 function createNewObstacle() {
   const obstacleY = Phaser.Math.Between(OBSTACLE_MIN_Y, OBSTACLE_MAX_Y);
-  var frame = 9;// Phaser.Math.Between(0, 15);
-  //if (frame > 8) frame = 9;
+  var frame = Phaser.Math.Between(0, 8);
   const image = scene.add.sprite(game.config.width + OBJECT_START_X_OFFSET, obstacleY, 'obstacle_sprites')
     .setFrame(frame).setDepth(obstacleY);
   setShading(image);
@@ -389,15 +408,25 @@ function createNewObstacle() {
   obstaclesTimerMax = Phaser.Math.Between(timeMin, timeMax);
 }
 
+function createNewWater() {
+  const obstacleY = Phaser.Math.Between(OBSTACLE_MIN_Y, OBSTACLE_MAX_Y);
+  const image = scene.add.sprite(game.config.width + OBJECT_START_X_OFFSET, obstacleY, 'water')
+    .setDepth(obstacleY);
+  setShading(image);
+  setPerspective(image);
+  image.hit = false;
+  waters.add(image);
+  waterTimer = 0;
+  waterTimerMax = Phaser.Math.Between(timeMin, timeMax);
+}
+
 function update() {
   if (!startGame)
     return;
   if (pukeLevel.y > 40) {
     pukeLevel.y -= .1;
   }
-  if (pukeLevel.y < 80) {
-    puke_sign.visible = true;
-  }
+  puke_sign.visible = pukeLevel.y < 80;
   if (avatar.x < 900) {
     avatar.x += pukerSpeed / 10;
   }

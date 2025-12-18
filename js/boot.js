@@ -46,6 +46,9 @@ var pukerPauseTimer = 0;
 var pukerPauseTimeMax = 100;
 var puke_sign;
 var obstacles;
+var waters;
+var waterTimer = 0;
+var waterTimerMax;
 var obstacle_sprites;
 var obstaclesTimer = 0;
 var obstaclesTimerMax;
@@ -89,8 +92,7 @@ const OBSTACLE_TYPE = Object.freeze({
     GAME_CONSOLE_6: 5,
     GAME_CONSOLE_7: 6,
     TABLE: 7,
-    CHAIR: 8,
-    WATER: 9
+    CHAIR: 8
 });
 
 const PUKER_ANIM = Object.freeze({

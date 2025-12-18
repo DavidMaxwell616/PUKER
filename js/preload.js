@@ -17,6 +17,7 @@ function preload() {
     this.load.image('wall', 'brick wall.png');
     this.load.image('instructions', 'instructions.png');
     this.load.image('scoreboard', 'scoreboard.png');
+    this.load.image('water', 'water.png');
     this.load.image('floor 1', 'floor 1.png');
     this.load.image('floor 2', 'floor 2.png');
     this.load.image('floor 3', 'floor 3.png');
