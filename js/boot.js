@@ -78,9 +78,8 @@ const PUKER_STATE = Object.freeze({
     FALLING: 2,
     GAGGING: 3,
     RUNNING: 4,
-    STUMBLING_1: 5,
-    STUMBLING_2: 6,
-    WALKING: 7
+    STUMBLING: 5,
+    WALKING: 6
 });
 
 const OBSTACLE_TYPE = Object.freeze({
@@ -101,8 +100,7 @@ const PUKER_ANIM = Object.freeze({
     FALLING: "puker_falling",
     GAGGING: "puker_gagging",
     RUNNING: "puker_running",
-    STUMBLING_1: "puker_stumbling_1",
-    STUMBLING_2: "puker_stumbling_2",
+    STUMBLING: "puker_stumbling",
     WALKING: "puker_walking"
 });
 
@@ -127,7 +125,7 @@ const puker_states = [
         id: 2,
         name: "puker_falling",
         width: 226,
-        height: 420,
+        height: 240,
         frames: 19,
         repeat: false,
     },
@@ -149,22 +147,14 @@ const puker_states = [
     },
     {
         id: 5,
-        name: "puker_stumbling_1",
-        width: 197,
-        height: 240,
-        frames: 17,
-        repeat: false,
-    },
-    {
-        id: 6,
-        name: "puker_stumbling_2",
+        name: "puker_stumbling",
         width: 175,
         height: 240,
         frames: 17,
         repeat: false,
     },
     {
-        id: 7,
+        id: 6,
         name: "puker_walking",
         width: 172,
         height: 238,

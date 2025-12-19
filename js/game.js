@@ -152,7 +152,7 @@ function pukerHitPerson(puker, person) {
   if (!person.hit && Math.abs(puker.y - person.y) < 20 && Math.abs(puker.x + 20 - person.x) < 20) {
     person.hit = true;
     person.anims.play(person.name, true);
-    const anims = [0, 0, 0, 0];
+    const anims = [0, 2, 5];
     const randomIndex = Math.floor(Math.random() * anims.length);
     const anim = Object.keys(PUKER_STATE).find(
       key => PUKER_STATE[key] === randomIndex
@@ -213,6 +213,8 @@ function changePukerState(state, anim) {
   puker = pukerStates.getChildren()[state];
   puker.play(anim, true);
   puker.visible = true;
+  setShading(puker);
+  setPerspective(puker);
   if (puker.anims.currentAnim.key == PUKER_ANIM.DRINKING) {
     puker.on('animationcomplete', () => {
       pukerPause = false;
