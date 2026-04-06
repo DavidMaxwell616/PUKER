@@ -1,78 +1,20 @@
-const STAGEWIDTH = 800;
-const STAGEHEIGHT = 350;
-const MAX_ITEMS = 9;
-const PUKER_MIN_Y = 275;
-const PUKER_MAX_Y = 500;
-const OBSTACLE_MIN_Y = 275;
-const OBSTACLE_MAX_Y = 468;
-const MIDLINE = 385
-const FLOOR_TEXTURE_HEIGHT = 300;
-const OBJECT_START_X_OFFSET = 50;
-const PUKER_SIZE_FACTOR = 0.8;
-const MAX_DISTANCE = 500;
-const MIN_TINT = 0xFFFFFF; // White
-const MAX_TINT = 0x000000; // Black
+export const STAGEWIDTH = 800;
+export const STAGEHEIGHT = 350;
+export const MAX_ITEMS = 9;
+export const PUKER_MIN_Y = 275;
+export const PUKER_MAX_Y = 500;
+export const OBSTACLE_MIN_Y = 275;
+export const OBSTACLE_MAX_Y = 468;
+export const MIDLINE = 385
+export const FLOOR_TEXTURE_HEIGHT = 300;
+export const OBJECT_START_X_OFFSET = 50;
+export const PUKER_SIZE_FACTOR = 0.8;
+export const MAX_DISTANCE = 500;
+export const MIN_TINT = 0xFFFFFF; // White
+export const MAX_TINT = 0x000000; // Black
+export const BACKGROUND_WALKERS_Y = 190;
 
-var puker;
-var startGame;
-var wall;
-var wall2;
-var floorMesh;
-
-var tileGap = 0;
-var startDepth = 10;
-var floorShadow;
-var backgroundItems;
-var backgroundItemsTimer = 0;
-var backgroundItemsTimerMax = 0;
-var backgroundImages;
-var backgroundItemsY = 186;
-var cursors;
-var isUpDown;
-var isDownDown;
-var pukerScale = 1;
-var pukerSpeed = 1;
-var walkerShowing = false;
-var walkerSpeed = 1;
-var backgroundWalkers = [];
-var backgroundWalkersTimer = 0;
-var backgroundWalkers;
-var backgroundWalkersY = 190;
-var people;
-var peopleTimer = 0;
-var peopleTimerMax = 0;
-var pukerPause = false;
-var pukerPauseTimer = 0;
-var pukerPauseTimeMax = 100;
-var puke_sign;
-var obstacles;
-var waters;
-var waterTimer = 0;
-var waterTimerMax;
-var obstacle_sprites;
-var obstaclesTimer = 0;
-var obstaclesTimerMax;
-var walkersTimer = 0;
-var walkersTimerMax;
-var pukerStates;
-var puker;
-var timeMin = 400;
-var timeMax = 1000;
-var cursors;
-var isUpDown;
-var isDownDown;
-var pukeMeter;
-var splash;
-var instructions;
-var powerBar;
-var avatar;
-var pukeLevel;
-var pukeTint;
-var currentPukerState;
-var game_state;
-var scoreboard;
-
-const PUKER_STATE = Object.freeze({
+export const PUKER_STATE = Object.freeze({
     BUMPING: 0,
     DRINKING: 1,
     FALLING: 2,
@@ -82,7 +24,7 @@ const PUKER_STATE = Object.freeze({
     WALKING: 6
 });
 
-const OBSTACLE_TYPE = Object.freeze({
+export const OBSTACLE_TYPE = Object.freeze({
     GAME_CONSOLE_1: 0,
     GAME_CONSOLE_2: 1,
     GAME_CONSOLE_3: 2,
@@ -94,7 +36,7 @@ const OBSTACLE_TYPE = Object.freeze({
     CHAIR: 8
 });
 
-const PUKER_ANIM = Object.freeze({
+export const PUKER_ANIM = Object.freeze({
     BUMPING: "puker_bumping",
     DRINKING: "puker_drinking",
     FALLING: "puker_falling",
@@ -104,7 +46,7 @@ const PUKER_ANIM = Object.freeze({
     WALKING: "puker_walking"
 });
 
-const puker_states = [
+export const PUKER_STATES = [
     {
         id: 0,
         name: "puker_bumping",
@@ -163,7 +105,7 @@ const puker_states = [
     }
 ];
 
-const people_sprites = [
+export const PEOPLE_SPRITES = [
     {
         id: 0,
         name: "dude_1",
@@ -211,7 +153,7 @@ const people_sprites = [
     }
 ];
 
-const walker_sprites = [
+export const WALKER_SPRITES = [
     {
         id: 0,
         name: "walker_1",
@@ -238,35 +180,35 @@ const walker_sprites = [
     },
 ];
 
-const startButtonShape = new Phaser.Geom.Polygon([
+export const startButtonShape = new Phaser.Geom.Polygon([
     new Phaser.Geom.Point(560, 352),
     new Phaser.Geom.Point(815, 335),
     new Phaser.Geom.Point(823, 392),
     new Phaser.Geom.Point(563, 408)
 ]);
 
-const instructionsButtonShape = new Phaser.Geom.Polygon([
+export const instructionsButtonShape = new Phaser.Geom.Polygon([
     new Phaser.Geom.Point(485, 450),
     new Phaser.Geom.Point(693, 435),
     new Phaser.Geom.Point(702, 475),
     new Phaser.Geom.Point(490, 490)
 ]);
 
-const scoreboardButtonShape = new Phaser.Geom.Polygon([
+export const scoreboardButtonShape = new Phaser.Geom.Polygon([
     new Phaser.Geom.Point(715, 434),
     new Phaser.Geom.Point(893, 446),
     new Phaser.Geom.Point(895, 485),
     new Phaser.Geom.Point(715, 470)
 ]);
 
-const exitInstructionsShape = new Phaser.Geom.Polygon([
+export const exitInstructionsShape = new Phaser.Geom.Polygon([
     new Phaser.Geom.Point(558, 435),
     new Phaser.Geom.Point(650, 428),
     new Phaser.Geom.Point(655, 465),
     new Phaser.Geom.Point(558, 475)
 ]);
 
-const GAME_STATE = Object.freeze({
+export const GAME_STATE = Object.freeze({
     INTRO: 0,
     INSTRUCTIONS: 1,
     SCOREBOARD: 2,
@@ -275,7 +217,7 @@ const GAME_STATE = Object.freeze({
     LEVEL_3: 5
 });
 
-const exitScoreboardShape = new Phaser.Geom.Polygon([
+export const exitScoreboardShape = new Phaser.Geom.Polygon([
     new Phaser.Geom.Point(890, 447),
     new Phaser.Geom.Point(986, 442),
     new Phaser.Geom.Point(986, 491),
