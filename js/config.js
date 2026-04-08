@@ -21,7 +21,8 @@ export const PUKER_STATE = Object.freeze({
     GAGGING: 3,
     RUNNING: 4,
     STUMBLING: 5,
-    WALKING: 6
+    WALKING: 6,
+    HIT: 7
 });
 
 export const OBSTACLE_TYPE = Object.freeze({
@@ -43,7 +44,8 @@ export const PUKER_ANIM = Object.freeze({
     GAGGING: "puker_gagging",
     RUNNING: "puker_running",
     STUMBLING: "puker_stumbling",
-    WALKING: "puker_walking"
+    WALKING: "puker_walking",
+    HIT: "puker_bumping",
 });
 
 export const PUKER_STATES = [
@@ -210,11 +212,10 @@ export const exitInstructionsShape = new Phaser.Geom.Polygon([
 
 export const GAME_STATE = Object.freeze({
     INTRO: 0,
-    INSTRUCTIONS: 1,
-    SCOREBOARD: 2,
-    LEVEL_1: 3,
-    LEVEL_2: 4,
-    LEVEL_3: 5
+    LEVEL_INTRO: 1,
+    INSTRUCTIONS: 2,
+    SCOREBOARD: 3,
+    LEVEL: 4
 });
 
 export const exitScoreboardShape = new Phaser.Geom.Polygon([

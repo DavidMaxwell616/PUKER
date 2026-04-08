@@ -2,14 +2,154 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8" />
-  <title>PUKER TEST</title>
-  <script src="//cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
- </head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phaser Skew + Gradient</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
+
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: #111;
+      overflow: hidden;
+    }
+
+    #game-container {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    canvas {
+      display: block;
+      margin: 0 auto;
+    }
+  </style>
+</head>
 
 <body>
-  </div>
+  <div id="game-container"></div>
 
+  <script>
+    class MainScene extends Phaser.Scene {
+      constructor() {
+        super("MainScene");
+
+        this.wallWidth = 500;
+        this.wallHeight = 800;
+        this.bottomInset = 320;
+      }
+
+      preload() {
+        this.load.image("wall", "../assets/images/brick.png");
+        this.load.image("bouncer", "../assets/images/bouncer&girl.png");
+      }
+
+      create() {
+        this.centerX = this.scale.width * 0.5;
+        this.centerY = this.scale.height * 0.55;
+        this.exitWall = this.add.image(this.centerX, this.centerY, "wall");
+        this.bouncer = this.add.image(this.centerX - 180, this.centerY + 60, "bouncer").setScale(.55);
+        this.keys = this.input.keyboard.addKeys({
+          left: Phaser.Input.Keyboard.KeyCodes.LEFT,
+          right: Phaser.Input.Keyboard.KeyCodes.RIGHT
+        });
+
+
+        this.drawExitWall();
+      }
+
+      drawExitWall() {
+        const src = this.textures.get("wall").getSourceImage();
+        const w = this.wallWidth;
+        const h = this.wallHeight;
+        const bottomInset = Phaser.Math.Clamp(this.bottomInset, 0, h * 0.45);
+
+        const key = "wall_skewed_gradient";
+
+        if (this.textures.exists(key)) {
+          this.textures.remove(key);
+        }
+
+        const tex = this.textures.createCanvas(key, w, h);
+        const ctx = tex.context;
+
+        const srcW = src.width;
+        const srcH = src.height;
+
+        ctx.clearRect(0, 0, w, h);
+
+        for (let x = 0; x < w; x++) {
+          const t = x / (w - 1);
+
+          // Trapezoid geometry (left narrow → right wide)
+          const topY = bottomInset * (1 - t);
+          const bottomY = h - bottomInset * (1 - t);
+          const colHeight = bottomY - topY;
+
+          // 🎯 Gradient shading (left darker → right lighter)
+          const shade = 0.3 + 0.7 * t;
+
+          ctx.save();
+
+          // Draw texture slice
+          ctx.drawImage(
+            src,
+            (x / w) * srcW, 0, Math.max(1, srcW / w), srcH,
+            x, topY, 1, colHeight
+          );
+
+          // Apply shading
+          ctx.globalCompositeOperation = "multiply";
+          ctx.fillStyle = `rgba(0,0,0,${1 - shade})`;
+          ctx.fillRect(x, topY, 1, colHeight);
+
+          ctx.restore();
+        }
+
+        tex.refresh();
+
+        this.exitWall.setTexture(key);
+      }
+
+      update() {
+        let changed = false;
+        //bottomInset is between 0 and 360
+        if (this.keys.left.isDown && this.bottomInset > 0) {
+          this.wallHeight -= 2;
+          changed = true;
+        }
+
+        if (this.keys.right.isDown && this.bottomInset < 360) {
+          this.wallHeight += 2;
+          changed = true;
+        }
+
+        if (changed) {
+          this.drawExitWall();
+        }
+      }
+    }
+
+    const config = {
+      type: Phaser.WEBGL,
+      parent: "game-container",
+      width: 800,
+      height: 600,
+      backgroundColor: "#222222",
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+      },
+      scene: [MainScene]
+    };
+
+    new Phaser.Game(config);
+  </script>
 </body>
 
 </html>
