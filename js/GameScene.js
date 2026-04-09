@@ -108,7 +108,7 @@ export class GameScene extends Phaser.Scene {
     this.load.image("pukeMeter", "pukeMeter.png");
     this.load.image("pukeLevel", "puke.png");
     this.load.image("avatar", "avatar.png");
-    this.load.image("power bar", "power bar.png");
+    this.load.image("progress bar", "progress bar.png");
   }
 
   create() {
@@ -244,9 +244,10 @@ export class GameScene extends Phaser.Scene {
     this.pukeSign.play("puke_sign");
     this.pukeSign.visible = false;
 
-    this.powerBar = this.add
-      .sprite(this.game.config.width / 2, this.game.config.height - 20, "power bar")
-      .setScale(1.3);
+    this.progressBar = this.add
+      .sprite(this.game.config.width / 2, this.game.config.height - 20, "progress bar")
+      .setScale(1.3)
+      .setDepth(500);
 
     this.avatar = this.add.sprite(150, this.game.config.height - 20, "avatar");
 
@@ -886,8 +887,8 @@ export class GameScene extends Phaser.Scene {
     const image = this.add
       .sprite(this.game.config.width + OBJECT_START_X_OFFSET, obstacleY, "obstacle_sprites")
       .setFrame(frame)
+      .setOrigin(0.5, 1)
       .setDepth(obstacleY);
-
     this.setShading(image);
     this.setPerspective(image);
 
