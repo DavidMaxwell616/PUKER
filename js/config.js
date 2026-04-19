@@ -13,7 +13,7 @@ export const MAX_DISTANCE = 500;
 export const MIN_TINT = 0xFFFFFF; // White
 export const MAX_TINT = 0x000000; // Black
 export const BACKGROUND_WALKERS_Y = 190;
-
+export const DEBUG = true;
 export const PUKER_STATE = Object.freeze({
     BUMPING: 0,
     DRINKING: 1,
@@ -22,7 +22,7 @@ export const PUKER_STATE = Object.freeze({
     RUNNING: 4,
     STUMBLING: 5,
     WALKING: 6,
-    HIT: 7
+    HIT: 7,
 });
 
 export const OBSTACLE_TYPE = Object.freeze({

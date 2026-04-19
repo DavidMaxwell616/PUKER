@@ -1,7 +1,8 @@
 import {
   PUKER_STATES, PEOPLE_SPRITES, WALKER_SPRITES, OBJECT_START_X_OFFSET,
   FLOOR_TEXTURE_HEIGHT, MIDLINE, OBSTACLE_TYPE, PUKER_STATE, PUKER_ANIM,
-  BACKGROUND_WALKERS_Y, PUKER_MIN_Y, PUKER_MAX_Y
+  BACKGROUND_WALKERS_Y, PUKER_MIN_Y, PUKER_MAX_Y,
+  GAME_STATE
 } from "./config.js";
 
 export class GameScene extends Phaser.Scene {
@@ -37,14 +38,14 @@ export class GameScene extends Phaser.Scene {
     this.levelComplete = false;
     this.levelFailed = false;
     this.levelGoalX = 900;
-    this.failYThreshold = 540;
-
-    this.laneData = [];
-    this.currentLaneIndex = 0;
-    this.laneCount = 5;
-    this.laneSnapThreshold = 18;
+    this.failPukeLevelThreshold = 540;
+    this.noMoreStuffLine = 100;
 
     this.pukerInvincibleUntil = 0;
+
+    this.wallWidth = 500;
+    this.wallHeight = 800;
+    this.bottomInset = 220;
   }
 
   init(data) {
@@ -99,16 +100,21 @@ export class GameScene extends Phaser.Scene {
     });
 
     this.load.path = "../assets/images/";
-    this.load.image("wall", "brick wall.png");
     this.load.image("water", "water.png");
-    this.load.image("floor 1", "floor 1.png");
-    this.load.image("floor 2", "floor 2.png");
-    this.load.image("floor 3", "floor 3.png");
-    this.load.image("floor 4", "floor 4.jpg");
     this.load.image("pukeMeter", "pukeMeter.png");
     this.load.image("pukeLevel", "puke.png");
     this.load.image("avatar", "avatar.png");
     this.load.image("progress bar", "progress bar.png");
+    this.load.image("puker standing", "puker_standing.png");
+
+    this.load.path = "../assets/images/Level 1/";
+    this.load.image("level_1_wall", "brick wall.png");
+    this.load.image("level_1_Wall2", "brick wall2.png");
+    this.load.image("level_floor_1", "floor 1.png");
+    this.load.image("level_1_floor_2", "floor 2 square.png");
+    this.load.image("level_1_floor_3", "floor 3.png");
+    this.load.image("bouncer", "bouncer&girl.png");
+
   }
 
   create() {
@@ -119,11 +125,107 @@ export class GameScene extends Phaser.Scene {
     this.walkers = this.physics.add.group();
     this.waters = this.physics.add.group();
 
-    this.buildLaneData();
+    this.createLevel1();
+    const startY = Phaser.Math.Clamp(this.game.config.height * 0.7, PUKER_MIN_Y, PUKER_MAX_Y);
 
+    PUKER_STATES.forEach((state) => {
+      const newPuker = this.add.sprite(
+        this.game.config.width * 0.3,
+        startY,
+        state.name
+      );
+
+      if (!this.anims.exists(state.name)) {
+        this.anims.create({
+          key: state.name,
+          frames: this.anims.generateFrameNumbers(state.name, {
+            start: 0,
+            end: state.frames
+          }),
+          frameRate: 16,
+          repeat: state.repeat ? -1 : 0
+        });
+      }
+
+      newPuker.visible = false;
+      newPuker.flipX = true;
+      newPuker.setOrigin(0.5, 1);
+      newPuker.id = state.id;
+      newPuker.name = state.name;
+      this.pukerStates.add(newPuker);
+    });
+
+    this.changePukerState(PUKER_STATE.WALKING, PUKER_ANIM.WALKING);
+
+    this.backgroundItemsTimerMax = Phaser.Math.Between(this.timeMin, this.timeMax / 2);
+    this.obstaclesTimerMax = Phaser.Math.Between(this.timeMin, this.timeMax);
+    this.peopleTimerMax = Phaser.Math.Between(this.timeMin, this.timeMax);
+    this.walkersTimerMax = Phaser.Math.Between(this.timeMin, this.timeMax);
+    this.waterTimerMax = Phaser.Math.Between(this.timeMin, this.timeMax);
+
+    this.pukeMeter = this.add.sprite(25, 260, "pukeMeter").setScale(1.4);
+    this.pukeLevel = this.add.sprite(27, 500, "pukeLevel").setScale(1.3).setOrigin(0.5, 0);
+    this.pukeSign = this.add.sprite(25, 15, "puke_sign");
+
+    if (!this.anims.exists("puke_sign")) {
+      this.anims.create({
+        key: "puke_sign",
+        frames: this.anims.generateFrameNumbers("puke_sign", {
+          start: 0,
+          end: 2
+        }),
+        frameRate: 16,
+        repeat: -1
+      });
+    }
+
+    this.pukeSign.play("puke_sign");
+    this.pukeSign.visible = false;
+
+    this.progressBar = this.add
+      .sprite(this.game.config.width / 2, this.game.config.height - 20, "progress bar")
+      .setScale(1.3)
+      .setDepth(1400);
+
+    this.avatar = this.add
+      .sprite(150, this.game.config.height - 20, "avatar")
+      .setDepth(1500)
+      .setScale(1.2);
+
+    this.scoreText = this.add.text(120, 18, "", {
+      fontFamily: "Arial",
+      fontSize: "20px",
+      color: "#ffffff"
+    }).setDepth(2000);
+
+    this.levelText = this.add.text(120, 44, "", {
+      fontFamily: "Arial",
+      fontSize: "20px",
+      color: "#ffffff"
+    }).setDepth(2000);
+
+    this.livesText = this.add.text(120, 70, "", {
+      fontFamily: "Arial",
+      fontSize: "20px",
+      color: "#ffffff"
+    }).setDepth(2000);
+
+    this.refreshHud();
+
+    this.cursors = this.input.keyboard.createCursorKeys();
+
+    this.startGame = true;
+
+    this.physics.add.overlap(this.pukerStates, this.people, this.pukerHitPerson, null, this);
+    this.physics.add.overlap(this.pukerStates, this.obstacles, this.pukerHitObstacle, null, this);
+    this.physics.add.overlap(this.pukerStates, this.waters, this.pukerHitWater, null, this);
+  }
+
+  createLevel1() {
     const floorKey = `floor ${Phaser.Math.Clamp(this.level, 1, 4)}`;
-
-    this.floor = this.add.plane(this.game.config.width / 2, 336, floorKey);
+    const w = this.game.config.width;
+    const h = this.game.config.height;
+    this.floor = this.add.plane(w / 2, 336, floorKey);
     this.floor.setGridSize(16, 16);
     this.floor.uvScale(16, 16);
     this.floor.viewPosition.z = 1.6;
@@ -132,7 +234,12 @@ export class GameScene extends Phaser.Scene {
 
     this.wall = this.add.sprite(0, 0, "wall").setOrigin(0, 0).setScale(1.5);
     this.wall2 = this.add.sprite(1000, 0, "wall").setOrigin(0, 0).setScale(1.5);
-    this.exitwall = this.add.image(500, 0, "wall").setOrigin(0, 0).setScale(1.5);
+    this.resetExitWall(w, h);
+
+    this.exitWallTex = this.textures.createCanvas("wallCanvas", w, h);
+    this.exitWallImage = this.add.image(0, 0, "wallCanvas").setOrigin(0, 0).setDepth(1200);
+    this.exitWallImage = this.textures.get("wall2").getSourceImage();
+    this.drawExitWall();
 
     const texture = this.textures.createCanvas(
       "gradient",
@@ -140,6 +247,9 @@ export class GameScene extends Phaser.Scene {
       FLOOR_TEXTURE_HEIGHT
     );
 
+    this.cursors = this.input.keyboard.createCursorKeys();
+    this.pukerStanding = this.add.image(0, 0, "puker standing").setOrigin(0.5, 1).setDepth(1200).setVisible(false);
+    this.bouncer = this.add.image(0, 0, "bouncer").setOrigin(0, 0).setDepth(1250).setScale(.5).setVisible(false);
     const grd = texture.context.createLinearGradient(0, 0, 0, FLOOR_TEXTURE_HEIGHT);
     grd.addColorStop(0, "rgba(0, 0, 0, .7)");
     grd.addColorStop(1, "rgba(0, 0, 0, .01)");
@@ -186,268 +296,17 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
-    this.currentLaneIndex = this.getClosestLaneIndex(this.game.config.height * 0.7);
-
-    PUKER_STATES.forEach((state) => {
-      const newPuker = this.add.sprite(
-        this.game.config.width * 0.3,
-        this.getLaneY(this.currentLaneIndex),
-        state.name
-      );
-
-      if (!this.anims.exists(state.name)) {
-        this.anims.create({
-          key: state.name,
-          frames: this.anims.generateFrameNumbers(state.name, {
-            start: 0,
-            end: state.frames
-          }),
-          frameRate: 16,
-          repeat: state.repeat ? -1 : 0
-        });
-      }
-
-      newPuker.visible = false;
-      newPuker.flipX = true;
-      newPuker.setOrigin(0.5, 1);
-      newPuker.id = state.id;
-      newPuker.name = state.name;
-      newPuker.laneIndex = this.currentLaneIndex;
-      newPuker.currentLane = this.currentLaneIndex;
-      this.pukerStates.add(newPuker);
-    });
-
-    this.changePukerState(PUKER_STATE.WALKING, PUKER_ANIM.WALKING);
-
-    this.backgroundItemsTimerMax = Phaser.Math.Between(this.timeMin, this.timeMax / 2);
-    this.obstaclesTimerMax = Phaser.Math.Between(this.timeMin, this.timeMax);
-    this.peopleTimerMax = Phaser.Math.Between(this.timeMin, this.timeMax);
-    this.walkersTimerMax = Phaser.Math.Between(this.timeMin, this.timeMax);
-    this.waterTimerMax = Phaser.Math.Between(this.timeMin, this.timeMax);
-
-    this.pukeMeter = this.add.sprite(25, 260, "pukeMeter").setScale(1.4);
-    this.pukeLevel = this.add.sprite(27, 500, "pukeLevel").setScale(1.3).setOrigin(0.5, 0);
-    this.pukeSign = this.add.sprite(25, 15, "puke_sign");
-
-    if (!this.anims.exists("puke_sign")) {
-      this.anims.create({
-        key: "puke_sign",
-        frames: this.anims.generateFrameNumbers("puke_sign", {
-          start: 0,
-          end: 2
-        }),
-        frameRate: 16,
-        repeat: -1
-      });
-    }
-
-    this.pukeSign.play("puke_sign");
-    this.pukeSign.visible = false;
-
-    this.progressBar = this.add
-      .sprite(this.game.config.width / 2, this.game.config.height - 20, "progress bar")
-      .setScale(1.3)
-      .setDepth(500);
-
-    this.avatar = this.add.sprite(150, this.game.config.height - 20, "avatar");
-
-    this.scoreText = this.add.text(120, 18, "", {
-      fontFamily: "Arial",
-      fontSize: "20px",
-      color: "#ffffff"
-    }).setDepth(2000);
-
-    this.levelText = this.add.text(120, 44, "", {
-      fontFamily: "Arial",
-      fontSize: "20px",
-      color: "#ffffff"
-    }).setDepth(2000);
-
-    this.livesText = this.add.text(120, 70, "", {
-      fontFamily: "Arial",
-      fontSize: "20px",
-      color: "#ffffff"
-    }).setDepth(2000);
-
-    this.refreshHud();
-
-    this.cursors = this.input.keyboard.createCursorKeys();
-
-    this.startGame = true;
-
-    this.physics.add.overlap(this.puker, this.people, this.pukerHitPerson, null, this);
-    this.physics.add.overlap(this.puker, this.obstacles, this.pukerHitObstacle, null, this);
-    this.physics.add.overlap(this.puker, this.waters, this.pukerHitWater, null, this);
   }
+  resetExitWall(w, h) {
+    this.exitWall = {
+      leftX: w,
+      topLeftY: 0,
+      bottomLeftY: 230,
 
-  buildLaneData() {
-    this.laneData = [];
-
-    const laneTop = PUKER_MIN_Y;
-    const laneBottom = PUKER_MAX_Y;
-    const usableHeight = laneBottom - laneTop;
-    const laneSpacing = usableHeight / (this.laneCount - 1);
-
-    for (let i = 0; i < this.laneCount; i++) {
-      const y = Math.round(laneTop + i * laneSpacing);
-      this.laneData.push({
-        index: i,
-        y,
-        minY: y - this.laneSnapThreshold,
-        maxY: y + this.laneSnapThreshold
-      });
-    }
-  }
-
-  drawExitWall() {
-    const src = this.textures.get("wall").getSourceImage();
-    const w = this.wallWidth;
-    const h = this.wallHeight;
-    const bottomInset = Phaser.Math.Clamp(this.bottomInset, 0, h * 0.45);
-
-    const key = "wall_skewed_gradient";
-
-    if (this.textures.exists(key)) {
-      this.textures.remove(key);
-    }
-
-    const tex = this.textures.createCanvas(key, w, h);
-    const ctx = tex.context;
-
-    const srcW = src.width;
-    const srcH = src.height;
-
-    ctx.clearRect(0, 0, w, h);
-
-    for (let x = 0; x < w; x++) {
-      const t = x / (w - 1);
-
-      // Trapezoid geometry (left narrow → right wide)
-      const topY = bottomInset * (1 - t);
-      const bottomY = h - bottomInset * (1 - t);
-      const colHeight = bottomY - topY;
-
-      // 🎯 Gradient shading (left darker → right lighter)
-      const shade = 0.3 + 0.7 * t;
-
-      ctx.save();
-
-      // Draw texture slice
-      ctx.drawImage(
-        src,
-        (x / w) * srcW, 0, Math.max(1, srcW / w), srcH,
-        x, topY, 1, colHeight
-      );
-
-      // Apply shading
-      ctx.globalCompositeOperation = "multiply";
-      ctx.fillStyle = `rgba(0,0,0,${1 - shade})`;
-      ctx.fillRect(x, topY, 1, colHeight);
-
-      ctx.restore();
-    }
-
-    tex.refresh();
-
-    this.exitwall.setTexture(key).setDepth(1000);
-
-
-  }
-
-  getClosestLaneIndex(y) {
-    let bestIndex = 0;
-    let bestDist = Number.MAX_SAFE_INTEGER;
-
-    for (let i = 0; i < this.laneData.length; i++) {
-      const dist = Math.abs(y - this.laneData[i].y);
-      if (dist < bestDist) {
-        bestDist = dist;
-        bestIndex = i;
-      }
-    }
-
-    return bestIndex;
-  }
-
-  getLaneY(index) {
-    const safeIndex = Phaser.Math.Clamp(index, 0, this.laneData.length - 1);
-    return this.laneData[safeIndex].y;
-  }
-
-  sameLane(a, b) {
-    if (!a || !b) return false;
-    return a.laneIndex === b.laneIndex;
-  }
-
-  isLaneSafe(laneIndex) {
-    const dangerX = this.puker ? this.puker.x + 70 : this.game.config.width * 0.3 + 70;
-
-    for (const obstacle of this.obstacles.getChildren()) {
-      if (!obstacle.active) continue;
-      if (obstacle.laneIndex !== laneIndex) continue;
-      if (Math.abs(obstacle.x - dangerX) < 90) return false;
-    }
-
-    return true;
-  }
-
-  getOpenLaneAfterCollision(obstacleLaneIndex) {
-    const laneCount = this.laneData.length;
-    const candidates = [];
-
-    if (this.currentLaneIndex < obstacleLaneIndex) {
-      candidates.push(this.currentLaneIndex - 1, this.currentLaneIndex + 1);
-    } else if (this.currentLaneIndex > obstacleLaneIndex) {
-      candidates.push(this.currentLaneIndex + 1, this.currentLaneIndex - 1);
-    } else {
-      candidates.push(this.currentLaneIndex - 1, this.currentLaneIndex + 1);
-    }
-
-    for (let i = 0; i < laneCount; i++) {
-      if (!candidates.includes(i)) candidates.push(i);
-    }
-
-    for (const laneIndex of candidates) {
-      if (laneIndex < 0 || laneIndex >= laneCount) continue;
-      if (this.isLaneSafe(laneIndex)) return laneIndex;
-    }
-
-    return this.currentLaneIndex;
-  }
-
-  movePukerToLaneAnimated(laneIndex, duration = 220) {
-    const safeIndex = Phaser.Math.Clamp(laneIndex, 0, this.laneData.length - 1);
-    const targetY = this.getLaneY(safeIndex);
-
-    this.currentLaneIndex = safeIndex;
-
-    const targets = this.pukerStates.getChildren();
-    this.tweens.killTweensOf(targets);
-
-    targets.forEach((child) => {
-      child.laneIndex = safeIndex;
-    });
-
-    this.tweens.add({
-      targets,
-      y: targetY,
-      duration,
-      ease: "Cubic.easeInOut",
-      onUpdate: () => {
-        if (this.puker) {
-          this.puker.laneIndex = safeIndex;
-          this.setShading(this.puker);
-          this.setPerspective(this.puker);
-        }
-      },
-      onComplete: () => {
-        if (this.puker) {
-          this.puker.laneIndex = safeIndex;
-          this.setShading(this.puker);
-          this.setPerspective(this.puker);
-        }
-      }
-    });
+      rightX: w + 750,
+      topRightY: 0,
+      bottomRightY: h
+    };
   }
 
   refreshHud() {
@@ -464,7 +323,7 @@ export class GameScene extends Phaser.Scene {
     this.startGame = false;
     this.score += 1000 * this.level;
 
-    this.time.delayedCall(700, () => {
+    this.time.delayedCall(7000, () => {
       this.scene.start("HubScene", {
         level: this.level + 1,
         score: this.score,
@@ -493,25 +352,182 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
+  getBottomCollisionBox(sprite, height = 50, halfWidth = 20) {
+    if (!sprite) return null;
+
+    return {
+      left: sprite.x - halfWidth,
+      right: sprite.x + halfWidth,
+      top: sprite.y - height,
+      bottom: sprite.y,
+      width: halfWidth * 2,
+      height
+    };
+  }
+
+  bottomCollisionIntersects(a, b, height = 50, halfWidthA = 20, halfWidthB = 20) {
+    const boxA = this.getBottomCollisionBox(a, height, halfWidthA);
+    const boxB = this.getBottomCollisionBox(b, height, halfWidthB);
+
+    if (!boxA || !boxB) return false;
+
+    return !(
+      boxA.right < boxB.left ||
+      boxA.left > boxB.right ||
+      boxA.bottom < boxB.top ||
+      boxA.top > boxB.bottom
+    );
+  }
+
+  updatePukerDepth() {
+    if (!this.puker) return;
+
+    const depth = this.puker.y + 10;
+    this.puker.setDepth(depth);
+
+    this.pukerStates.getChildren().forEach((child) => {
+      child.setDepth(depth);
+    });
+  }
+
+  drawExitWall() {
+    const tl = { x: this.exitWall.leftX, y: this.exitWall.topLeftY };
+    const tr = { x: this.exitWall.rightX, y: this.exitWall.topRightY };
+    const br = { x: this.exitWall.rightX, y: this.exitWall.bottomRightY };
+    const bl = { x: this.exitWall.leftX, y: this.exitWall.bottomLeftY };
+
+    const tex = this.exitWallTex;
+    const ctx = tex.getContext();
+    const img = this.exitWallImage;
+
+    const sw = img.width;
+    const sh = img.height;
+
+    ctx.clearRect(0, 0, tex.width, tex.height);
+
+    const wallLeft = Math.min(tl.x, bl.x);
+    const wallRight = Math.max(tr.x, br.x);
+    const columns = Math.max(8, Math.floor(wallRight - wallLeft));
+
+    for (let i = 0; i < columns; i++) {
+      const t0 = i / columns;
+      const t1 = (i + 1) / columns;
+
+      const x0Top = Phaser.Math.Linear(tl.x, tr.x, t0);
+      const y0Top = Phaser.Math.Linear(tl.y, tr.y, t0);
+      const x0Bot = Phaser.Math.Linear(bl.x, br.x, t0);
+      const y0Bot = Phaser.Math.Linear(bl.y, br.y, t0);
+
+      const x1Top = Phaser.Math.Linear(tl.x, tr.x, t1);
+      const y1Top = Phaser.Math.Linear(tl.y, tr.y, t1);
+      const x1Bot = Phaser.Math.Linear(bl.x, br.x, t1);
+      const y1Bot = Phaser.Math.Linear(bl.y, br.y, t1);
+
+      const sx = Math.floor(t0 * sw);
+      const sWidth = Math.max(1, Math.ceil((t1 - t0) * sw));
+
+      const dx = Math.min(x0Top, x0Bot, x1Top, x1Bot);
+      const dy = Math.min(y0Top, y0Bot);
+      const dHeight = Math.max(1, Math.max(y0Bot, y1Bot) - Math.min(y0Top, y1Top));
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(x0Top, y0Top);
+      ctx.lineTo(x1Top, y1Top);
+      ctx.lineTo(x1Bot, y1Bot);
+      ctx.lineTo(x0Bot, y0Bot);
+      ctx.closePath();
+      ctx.clip();
+
+      ctx.drawImage(
+        img,
+        sx, 0, sWidth, sh,
+        dx, dy, Math.max(1, Math.abs(x1Top - x0Top) + Math.abs(x1Bot - x0Bot) * 0.5 + 1), dHeight
+      );
+
+      ctx.restore();
+    }
+
+    // Clip all lighting to the wall shape
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(tl.x, tl.y);
+    ctx.lineTo(tr.x, tr.y);
+    ctx.lineTo(br.x, br.y);
+    ctx.lineTo(bl.x, bl.y);
+    ctx.closePath();
+    ctx.clip();
+
+    // 1) Stronger left-side shadow
+    const leftShade = ctx.createLinearGradient(tl.x, 0, tr.x, 0);
+    leftShade.addColorStop(0.00, "rgba(0,0,0,0.72)");
+    leftShade.addColorStop(0.18, "rgba(0,0,0,0.48)");
+    leftShade.addColorStop(0.42, "rgba(0,0,0,0.20)");
+    leftShade.addColorStop(1.00, "rgba(0,0,0,0.00)");
+    ctx.fillStyle = leftShade;
+    ctx.fillRect(0, 0, tex.width, tex.height);
+
+    // 2) Soft top highlight
+    const topHighlight = ctx.createLinearGradient(0, tl.y, 0, Math.max(tr.y, tl.y) + 140);
+    topHighlight.addColorStop(0.00, "rgba(255,255,255,0.22)");
+    topHighlight.addColorStop(0.18, "rgba(255,255,255,0.10)");
+    topHighlight.addColorStop(1.00, "rgba(255,255,255,0.00)");
+    ctx.fillStyle = topHighlight;
+    ctx.fillRect(0, 0, tex.width, tex.height);
+
+    // 3) Right-side rim light
+    const rimStartX = tr.x - Math.max(30, (tr.x - tl.x) * 0.18);
+    const rightRim = ctx.createLinearGradient(rimStartX, 0, tr.x, 0);
+    rightRim.addColorStop(0.00, "rgba(255,220,160,0.00)");
+    rightRim.addColorStop(0.55, "rgba(255,220,160,0.08)");
+    rightRim.addColorStop(1.00, "rgba(255,220,160,0.24)");
+    ctx.fillStyle = rightRim;
+    ctx.fillRect(0, 0, tex.width, tex.height);
+
+    // 4) Subtle bottom vignette / grime
+    const bottomShade = ctx.createLinearGradient(0, Math.min(bl.y, br.y) - 140, 0, Math.max(bl.y, br.y));
+    bottomShade.addColorStop(0.00, "rgba(0,0,0,0.00)");
+    bottomShade.addColorStop(0.65, "rgba(0,0,0,0.10)");
+    bottomShade.addColorStop(1.00, "rgba(0,0,0,0.28)");
+    ctx.fillStyle = bottomShade;
+    ctx.fillRect(0, 0, tex.width, tex.height);
+
+    // 5) Extra darkening in the far-left corner for more depth
+    const cornerShade = ctx.createRadialGradient(
+      tl.x - 10, tl.y + 40, 10,
+      tl.x + 40, tl.y + 80, 240
+    );
+    cornerShade.addColorStop(0.00, "rgba(0,0,0,0.30)");
+    cornerShade.addColorStop(0.50, "rgba(0,0,0,0.14)");
+    cornerShade.addColorStop(1.00, "rgba(0,0,0,0.00)");
+    ctx.fillStyle = cornerShade;
+    ctx.fillRect(0, 0, tex.width, tex.height);
+
+    ctx.restore();
+    tex.refresh();
+
+  }
+
+
+
   pukerHitPerson(puker, person) {
-    if (!this.sameLane(puker, person)) return;
+    if (puker !== this.puker || !puker.visible) return;
     if (person.hit) return;
-    if (Math.abs((puker.x + 20) - person.x) > 24) return;
+    if (!this.bottomCollisionIntersects(puker, person, 50, 20, 20)) return;
 
     person.hit = true;
     person.anims.play(person.name, true);
 
     const anims = [0, 2, 5];
-    const randomIndex = Math.floor(Math.random() * anims.length);
-    const stateValue = anims[randomIndex];
+    const stateValue = anims[Math.floor(Math.random() * anims.length)];
     const animKey = Object.keys(PUKER_STATE).find((key) => PUKER_STATE[key] === stateValue);
 
     this.changePukerState(stateValue, PUKER_ANIM[animKey]);
     this.pukerPause = true;
     this.pukerSpeed = 0;
 
-    this.score += 100;
     this.refreshHud();
+    this.score = Math.max(0, this.score - 150);
 
     person.once("animationcomplete", () => {
       person.setFrame(0);
@@ -523,28 +539,28 @@ export class GameScene extends Phaser.Scene {
   }
 
   pukerHitWater(puker, water) {
-    if (!this.sameLane(puker, water)) return;
-    if (Math.abs((puker.x + 10) - water.x) > 26) return;
+    if (puker !== this.puker || !puker.visible) return;
+    if (!this.bottomCollisionIntersects(puker, water, 50, 20, 20)) return;
 
     water.destroy();
     this.pukerPause = true;
     this.pukerSpeed = 0;
     this.changePukerState(PUKER_STATE.DRINKING, PUKER_ANIM.DRINKING);
 
-    this.score += 50;
+    this.score += 150;
     this.refreshHud();
   }
 
   pukerHitObstacle(puker, obstacle) {
+    if (puker !== this.puker || !puker.visible) return;
     if (!puker || !obstacle || this.levelFailed || this.levelComplete) return;
-    if (!this.sameLane(puker, obstacle)) return;
+    if (obstacle.hit) return;
 
     const now = this.time.now;
     if (obstacle.hitCooldownUntil && now < obstacle.hitCooldownUntil) return;
     if (this.pukerInvincibleUntil && now < this.pukerInvincibleUntil) return;
 
-    const dx = Math.abs((puker.x + 10) - obstacle.x);
-    if (dx > 26) return;
+    if (!this.bottomCollisionIntersects(puker, obstacle, 50, 20, 20)) return;
 
     obstacle.hitCooldownUntil = now + 450;
     this.pukerInvincibleUntil = now + 450;
@@ -563,21 +579,27 @@ export class GameScene extends Phaser.Scene {
       duration: 90,
       repeats: 3
     });
+    obstacle.hit = true;
 
-    this.bumpPukerBack(obstacle);
+    if (this.isLowObstacle(obstacle)) {
+      // 🔹 LOW obstacle → side knock (trip)
+      this.knockPukerSide(obstacle);
 
-    this.changePukerState(
-      PUKER_STATE.HIT ?? PUKER_STATE.WALKING,
-      PUKER_ANIM.HIT ?? PUKER_ANIM.WALKING
-    );
+      this.changePukerState(
+        PUKER_STATE.HIT ?? PUKER_STATE.WALKING,
+        PUKER_ANIM.HIT ?? PUKER_ANIM.WALKING
+      );
 
-    const nextLane = this.getOpenLaneAfterCollision(obstacle.laneIndex);
-    if (nextLane !== this.currentLaneIndex) {
-      this.time.delayedCall(70, () => {
-        if (!this.levelFailed && !this.levelComplete) {
-          this.movePukerToLaneAnimated(nextLane, 240);
-        }
-      });
+      this.score = Math.max(0, this.score - 50); // lighter penalty
+
+    } else {
+
+      this.changePukerState(
+        PUKER_STATE.HIT ?? PUKER_STATE.WALKING,
+        PUKER_ANIM.HIT ?? PUKER_ANIM.WALKING
+      );
+
+      this.score = Math.max(0, this.score - 150);
     }
 
     this.cameras.main.shake(120, 0.003);
@@ -633,6 +655,40 @@ export class GameScene extends Phaser.Scene {
       }
     });
   }
+  isLowObstacle(obstacle) {
+    if (!this.puker || !obstacle) return false;
+
+    const pukerHeight = this.puker.displayHeight;
+    const obstacleHeight = obstacle.displayHeight;
+
+    return obstacleHeight < pukerHeight * 0.5;
+  }
+
+  knockPukerSide(obstacle) {
+    if (!this.puker) return;
+
+    const dir = obstacle.x >= this.puker.x ? -1 : 1;
+
+    const knockX = this.puker.x + dir * 18;
+    const knockY = this.puker.y - 10; // slight pop up
+
+    this.tweens.killTweensOf(this.puker);
+
+    this.tweens.add({
+      targets: this.puker,
+      x: knockX,
+      y: knockY,
+      duration: 80,
+      yoyo: true,
+      ease: "Quad.easeOut",
+      onUpdate: () => {
+        this.pukerStates.getChildren().forEach(child => {
+          child.x = this.puker.x;
+          child.y = this.puker.y;
+        });
+      }
+    });
+  }
 
   bumpPukerBack(obstacle) {
     if (!this.puker) return;
@@ -658,14 +714,12 @@ export class GameScene extends Phaser.Scene {
   }
 
   changePukerState(state, anim) {
-    let previousY = this.getLaneY(this.currentLaneIndex);
-    let previousLane = this.currentLaneIndex;
+    let previousY = Phaser.Math.Clamp(this.game.config.height * 0.7, PUKER_MIN_Y, PUKER_MAX_Y);
     let previousX = this.game.config.width * 0.3;
 
     if (this.puker) {
       previousY = this.puker.y;
       previousX = this.puker.x;
-      previousLane = this.puker.currentLane ?? this.puker.laneIndex ?? this.currentLaneIndex;
 
       this.puker.anims.stop();
       this.puker.visible = false;
@@ -676,18 +730,15 @@ export class GameScene extends Phaser.Scene {
 
     this.puker = nextPuker;
 
-    this.currentLaneIndex = Phaser.Math.Clamp(previousLane, 0, this.laneData.length - 1);
-
     this.puker.x = previousX;
     this.puker.y = previousY;
-    this.puker.laneIndex = this.currentLaneIndex;
-    this.puker.currentLane = this.currentLaneIndex;
 
     this.puker.play(anim, true);
     this.puker.visible = true;
 
     this.setShading(this.puker);
     this.setPerspective(this.puker);
+    this.updatePukerDepth();
 
     if (
       this.puker.anims.currentAnim &&
@@ -704,8 +755,7 @@ export class GameScene extends Phaser.Scene {
 
   createNewPerson() {
     const personIndex = Phaser.Math.Between(0, PEOPLE_SPRITES.length - 1);
-    const laneIndex = Phaser.Math.Between(0, this.laneData.length - 1);
-    const personY = this.getLaneY(laneIndex);
+    const personY = Phaser.Math.Between(PUKER_MIN_Y, PUKER_MAX_Y);
     const personName = PEOPLE_SPRITES[personIndex].name;
 
     const newPerson = this.add.sprite(
@@ -716,7 +766,6 @@ export class GameScene extends Phaser.Scene {
 
     newPerson.setOrigin(0.5, 1);
     newPerson.name = personName;
-    newPerson.laneIndex = laneIndex;
     newPerson.hit = false;
 
     this.setShading(newPerson);
@@ -731,14 +780,6 @@ export class GameScene extends Phaser.Scene {
   doWallAndFloorStuff() {
     if (this.wall.x > -1000) this.wall.x -= this.pukerSpeed;
     else this.wall.x = 0;
-
-    // if (this.exitWallMesh) {
-    //   this.exitWallMesh.x -= this.pukerSpeed;
-
-    //   if (this.exitWallMesh.x < this.scale.width * 0.7) {
-    //     this.exitWallMesh.x = this.scale.width * 0.86;
-    //   }
-    // }
 
     if (this.wall2.x > 0) this.wall2.x -= this.pukerSpeed;
     else this.wall2.x = 1000;
@@ -774,10 +815,11 @@ export class GameScene extends Phaser.Scene {
 
     this.walkers.getChildren().forEach((walker) => {
       walker.setDepth(walker.y);
-      walker.x -= walker.walkerSpeed;
+      walker.x -= this.pukerSpeed;
       if (walker.x < 0) walker.destroy();
     });
 
+    if (this.distanceCovered > this.noMoreStuffLine) return;
     if (++this.backgroundItemsTimer > this.backgroundItemsTimerMax) {
       const image = this.add
         .sprite(this.game.config.width + OBJECT_START_X_OFFSET, this.backgroundItemsY, "background items")
@@ -787,7 +829,6 @@ export class GameScene extends Phaser.Scene {
       this.backgroundItemsTimer = 0;
       this.backgroundItemsTimerMax = Phaser.Math.Between(this.timeMin, this.timeMax / 2);
     }
-
     if (++this.obstaclesTimer > this.obstaclesTimerMax) this.createNewObstacle();
     if (++this.waterTimer > this.waterTimerMax) this.createNewWater();
     if (++this.peopleTimer > this.peopleTimerMax) this.createNewPerson();
@@ -804,6 +845,7 @@ export class GameScene extends Phaser.Scene {
       });
       this.setShading(this.puker);
       this.setPerspective(this.puker);
+      this.updatePukerDepth();
     } else if (this.cursors.down.isDown && this.puker.y < PUKER_MAX_Y) {
       this.puker.y++;
       this.pukerStates.getChildren().forEach((element) => {
@@ -811,6 +853,7 @@ export class GameScene extends Phaser.Scene {
       });
       this.setShading(this.puker);
       this.setPerspective(this.puker);
+      this.updatePukerDepth();
     } else if (this.cursors.right.isDown) {
       this.pukerSpeed = 2;
       if (this.puker.id !== PUKER_STATE.RUNNING && !this.pukerPause) {
@@ -822,6 +865,11 @@ export class GameScene extends Phaser.Scene {
         this.changePukerState(PUKER_STATE.WALKING, PUKER_ANIM.WALKING);
       }
     }
+
+    this.puker.y = Phaser.Math.Clamp(this.puker.y, PUKER_MIN_Y, PUKER_MAX_Y);
+    this.pukerStates.getChildren().forEach((element) => {
+      element.y = this.puker.y;
+    });
   }
 
   setShading(sprite) {
@@ -869,7 +917,6 @@ export class GameScene extends Phaser.Scene {
       WALKER_SPRITES[walkerIndex].name
     );
 
-    newWalker.walkerSpeed = 1;
     newWalker.setScale(-1, 0.8);
     newWalker.anims.play(WALKER_SPRITES[walkerIndex].name);
 
@@ -880,8 +927,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   createNewObstacle() {
-    const laneIndex = Phaser.Math.Between(0, this.laneData.length - 1);
-    const obstacleY = this.getLaneY(laneIndex);
+    const obstacleY = Phaser.Math.Between(PUKER_MIN_Y, PUKER_MAX_Y);
     const frame = Phaser.Math.Between(0, 8);
 
     const image = this.add
@@ -889,6 +935,7 @@ export class GameScene extends Phaser.Scene {
       .setFrame(frame)
       .setOrigin(0.5, 1)
       .setDepth(obstacleY);
+
     this.setShading(image);
     this.setPerspective(image);
 
@@ -899,7 +946,6 @@ export class GameScene extends Phaser.Scene {
     image.hitCooldownUntil = 0;
     image.isWobbling = false;
     image.baseY = obstacleY;
-    image.laneIndex = laneIndex;
 
     this.obstacles.add(image);
 
@@ -908,17 +954,16 @@ export class GameScene extends Phaser.Scene {
   }
 
   createNewWater() {
-    const laneIndex = Phaser.Math.Between(0, this.laneData.length - 1);
-    const obstacleY = this.getLaneY(laneIndex);
+    const obstacleY = Phaser.Math.Between(PUKER_MIN_Y, PUKER_MAX_Y);
 
     const image = this.add
       .sprite(this.game.config.width + OBJECT_START_X_OFFSET, obstacleY, "water")
+      .setOrigin(0.5, 1)
       .setDepth(obstacleY);
 
     this.setShading(image);
     this.setPerspective(image);
     image.hit = false;
-    image.laneIndex = laneIndex;
 
     this.waters.add(image);
 
@@ -928,21 +973,31 @@ export class GameScene extends Phaser.Scene {
 
   update() {
     if (!this.startGame || !this.puker || this.levelComplete || this.levelFailed) return;
-    if (this.pukeLevel.y > 40) {
+
+    if (this.pukeLevel.y > 40 && this.gameState != GAME_STATE.LEVEL_INTRO) {
       this.pukeLevel.y -= 0.1;
     }
-    this.drawExitWall();
+
+    if (this.distanceCovered > 500) {
+      this.drawExitWall();
+      this.exitWall.rightX -= this.pukerSpeed * 2.45;
+      this.exitWall.leftX -= this.pukerSpeed;
+      this.bouncer.setPosition(this.exitWall.leftX, 200).setVisible(true);
+    }
+    if (this.distanceCovered > 750) {
+      this.pukerPause = true;
+      this.pukerSpeed = 0;
+      this.puker.setVisible(false);
+      this.pukerStanding.setPosition(this.puker.x, this.puker.y).setVisible(true);
+      this.gameState = GAME_STATE.LEVEL_INTRO;
+      //this.completeLevel();
+    }
 
     this.pukeSign.visible = this.pukeLevel.y < 80;
 
-    if (this.avatar.x < this.levelGoalX) {
+    if (this.avatar.x < this.levelGoalX && !this.pukerPause) {
       this.distanceCovered++;
       this.score++;
-      // if (this.distanceCovered > 500) {
-      //   this.exitWallMesh.x = 800;
-      //   this.exitWallMesh.y = 150;
-      //   this.exitWallMesh.setVisible(true).setDepth(1000);
-      // }
       this.avatar.x += this.pukerSpeed / 10;
     } else {
       this.completeLevel();
@@ -956,8 +1011,8 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
-    this.pukeLevel.setDepth(1000);
-    //    this.puker.setDepth(this.puker.y);
+    this.pukeLevel.setDepth(2000);
+    this.updatePukerDepth();
 
     this.doWallAndFloorStuff();
     this.doBackgroundObjectsStuff();

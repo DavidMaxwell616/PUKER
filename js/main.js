@@ -10,7 +10,7 @@ new Phaser.Game({
     height: H,
     physics: {
         default: "arcade",
-        arcade: { debug: false }
+        arcade: { debug: true }
     },
     scene: [HubScene, GameScene]
 });
