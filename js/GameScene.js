@@ -1,7 +1,7 @@
 import {
   PUKER_STATES, PEOPLE_SPRITES, WALKER_SPRITES, OBJECT_START_X_OFFSET,
   FLOOR_TEXTURE_HEIGHT, MIDLINE, OBSTACLE_TYPE, PUKER_STATE, PUKER_ANIM,
-  BACKGROUND_WALKERS_Y, PUKER_MIN_Y, PUKER_MAX_Y,
+  BACKGROUND_WALKERS_Y, PUKER_MIN_Y, PUKER_MAX_Y, MAX_PUKE_LIMIT,
   GAME_STATE
 } from "./config.js";
 
@@ -29,7 +29,7 @@ export class GameScene extends Phaser.Scene {
     this.startGame = false;
     this.pukerPause = false;
     this.pukerSpeed = 1;
-
+    this.failYThreshold = 540;
     this.level = 1;
     this.score = 0;
     this.lives = 3;
@@ -81,6 +81,11 @@ export class GameScene extends Phaser.Scene {
       frameHeight: 20
     });
 
+    this.load.spritesheet("puker_puking", "puker_puking.png", {
+      frameWidth: 218,
+      frameHeight: 280
+    });
+
     this.load.path = "../assets/images/";
     this.load.image("water", "water.png");
     this.load.image("pukeMeter", "pukeMeter.png");
@@ -89,7 +94,7 @@ export class GameScene extends Phaser.Scene {
     this.load.image("progress bar", "progress bar.png");
     this.load.image("puker standing", "puker_standing.png");
 
-    this.load.path = "../assets/images/Level 1/";
+    this.load.path = "../assets/images/Level_1/";
     this.load.image("level_1_wall", "brick wall.png");
     this.load.image("level_1_exit_wall", "brick exit wall.png");
     this.load.image("level_1_floor_1", "floor 1.png");
@@ -162,7 +167,19 @@ export class GameScene extends Phaser.Scene {
     this.pukeMeter = this.add.sprite(25, 260, "pukeMeter").setScale(1.4);
     this.pukeLevel = this.add.sprite(27, 500, "pukeLevel").setScale(1.3).setOrigin(0.5, 0);
     this.pukeSign = this.add.sprite(25, 15, "puke_sign");
-
+    this.puker_puking = this.add.sprite(0, 0, "puker_puking").setOrigin(0.5, 1).setScale(.9).setDepth(1200);
+    this.puker_puking.flipX = true;
+    if (!this.anims.exists("puker_puking")) {
+      this.anims.create({
+        key: "puker_puking",
+        frames: this.anims.generateFrameNumbers("puker_puking", {
+          start: 0,
+          end: 15
+        }),
+        frameRate: 16,
+        repeat: 0
+      });
+    }
     if (!this.anims.exists("puke_sign")) {
       this.anims.create({
         key: "puke_sign",
@@ -316,6 +333,7 @@ export class GameScene extends Phaser.Scene {
       y: (topMidY + bottomMidY) * 0.5
     };
   }
+
   resetExitWall(w, h) {
     this.exitWall = {
       leftX: w,
@@ -331,7 +349,7 @@ export class GameScene extends Phaser.Scene {
   refreshHud() {
     if (!this.scoreText) return;
     this.scoreText.setText(`Score: ${this.score}`);
-    this.levelText.setText(`Level: ${this.level}/${this.maxLevels}`);
+    this.levelText.setText(`Level: ${this.level}`);
     this.livesText.setText(`Lives: ${this.lives}`);
   }
 
@@ -342,7 +360,7 @@ export class GameScene extends Phaser.Scene {
     this.startGame = false;
     this.score += 1000 * this.level;
 
-    this.time.delayedCall(7000, () => {
+    this.time.delayedCall(5000, () => {
       this.scene.start("HubScene", {
         level: this.level + 1,
         score: this.score,
@@ -360,16 +378,20 @@ export class GameScene extends Phaser.Scene {
     this.levelFailed = true;
     this.startGame = false;
     this.lives -= 1;
+    this.puker.setVisible(false);
+    this.puker_puking.setPosition(this.puker.x, this.puker.y);
+    this.puker_puking.setVisible(true);
+    this.puker_puking.anims.play('puker_puking', true);
 
-    this.time.delayedCall(700, () => {
-      this.scene.start("HubScene", {
-        level: this.level,
-        score: this.score,
-        lives: this.lives,
-        result: "failed",
-        maxLevels: this.maxLevels
-      });
-    });
+    // this.time.delayedCall(700, () => {
+    //   this.scene.start("HubScene", {
+    //     level: this.level,
+    //     score: this.score,
+    //     lives: this.lives,
+    //     result: "failed",
+    //     maxLevels: this.maxLevels
+    //   });
+    // });
   }
 
   getBottomCollisionBox(sprite, height = 50, halfWidth = 20) {
@@ -527,9 +549,6 @@ export class GameScene extends Phaser.Scene {
     tex.refresh();
 
   }
-
-
-
   pukerHitPerson(puker, person) {
     if (puker !== this.puker || !puker.visible) return;
     if (person.hit) return;
@@ -580,7 +599,7 @@ export class GameScene extends Phaser.Scene {
     if (obstacle.hitCooldownUntil && now < obstacle.hitCooldownUntil) return;
     if (this.pukerInvincibleUntil && now < this.pukerInvincibleUntil) return;
 
-    if (!this.bottomCollisionIntersects(puker, obstacle, 50, 20, 20)) return;
+    if (!this.bottomCollisionIntersects(puker, obstacle, 50, 10, 10)) return;
 
     obstacle.hitCooldownUntil = now + 450;
     this.pukerInvincibleUntil = now + 450;
@@ -674,6 +693,7 @@ export class GameScene extends Phaser.Scene {
       }
     });
   }
+
   isLowObstacle(obstacle) {
     if (!this.puker || !obstacle) return false;
 
@@ -767,7 +787,7 @@ export class GameScene extends Phaser.Scene {
         this.pukerPause = false;
         this.pukerSpeed = 1;
         this.changePukerState(PUKER_STATE.WALKING, PUKER_ANIM.WALKING);
-        this.pukeLevel.y += 10;
+        this.pukeLevel.y += 25;
       });
     }
   }
@@ -834,7 +854,7 @@ export class GameScene extends Phaser.Scene {
 
     this.walkers.getChildren().forEach((walker) => {
       walker.setDepth(walker.y);
-      walker.x -= this.pukerSpeed;
+      walker.x -= this.pukerSpeed == 0 ? 1 : this.pukerSpeed;
       if (walker.x < 0) walker.destroy();
     });
 
@@ -991,10 +1011,14 @@ export class GameScene extends Phaser.Scene {
   }
 
   update() {
+
     if (!this.startGame || !this.puker || this.levelComplete || this.levelFailed) return;
 
-    if (this.pukeLevel.y > 40 && this.gameState != GAME_STATE.LEVEL_INTRO) {
+    if (this.pukeLevel.y > MAX_PUKE_LIMIT && this.gameState != GAME_STATE.LEVEL_INTRO) {
       this.pukeLevel.y -= 0.1;
+    }
+    else {
+      this.failLevel();
     }
 
     if (this.avatar.x > this.levelGoalX - 50) {
@@ -1009,9 +1033,9 @@ export class GameScene extends Phaser.Scene {
       this.pukerPause = true;
       this.pukerSpeed = 0;
       this.puker.setVisible(false);
-      this.pukerStanding.setPosition(this.puker.x, this.puker.y).setVisible(true);
+      this.pukerStanding.setPosition(this.puker.x, this.puker.y).setVisible(true).setDepth(this.puker.depth);
       this.gameState = GAME_STATE.LEVEL_INTRO;
-      //this.completeLevel();
+      this.completeLevel();
     }
 
     this.pukeSign.visible = this.pukeLevel.y < 80;
@@ -1028,7 +1052,6 @@ export class GameScene extends Phaser.Scene {
     }
 
     this.refreshHud();
-
     if (this.pukeLevel.y >= this.failYThreshold) {
       this.failLevel();
       return;

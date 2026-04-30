@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Phaser Straight Perspective Floor PNG</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        class MainScene extends Phaser.Scene {
+            constructor() {
+                super("MainScene");
+            }
+
+            preload() {
+                this.load.image("floor1", "./floor 1.png");
+                this.load.image("floor2", "./floor 2.png");
+                this.load.image("floor3", "./floor 3.png");
+            }
+            create() {
+                this.cameras.main.setBackgroundColor("#050505");
+
+                this.cursors = this.input.keyboard.createCursorKeys();
+
+                const floorKey = `floor3`;
+                const w = this.game.config.width;
+                const h = this.game.config.height;
+                this.floor = this.add.plane(w / 2, 300, floorKey);
+                this.floor.viewPosition.z = 1.1;
+                this.floor.rotateX = 285;
+
+
+            }
+
+            update() {
+                this.floor.uvScroll(0.002, 0);
+            }
+        }
+        const config = {
+            type: Phaser.WEBGL,
+            width: window.innerWidth,
+            height: window.innerHeight,
+            scene: MainScene,
+            scale: {
+                mode: Phaser.Scale.RESIZE,
+                autoCenter: Phaser.Scale.CENTER_BOTH
+            }
+        };
+
+        new Phaser.Game(config);
+    </script>
+</body>
+
+</html>

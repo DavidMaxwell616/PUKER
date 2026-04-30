@@ -14,6 +14,8 @@ export const MIN_TINT = 0xFFFFFF; // White
 export const MAX_TINT = 0x000000; // Black
 export const BACKGROUND_WALKERS_Y = 190;
 export const DEBUG = true;
+export const MAX_PUKE_LIMIT = 40;
+
 export const PUKER_STATE = Object.freeze({
     BUMPING: 0,
     DRINKING: 1,
