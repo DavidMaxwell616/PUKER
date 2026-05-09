@@ -109,14 +109,21 @@ export class GameScene extends Phaser.Scene {
       });
     });
 
-    this.load.spritesheet("background items", "background items.png", {
+    this.load.spritesheet("background_items_level_1", "background items.png", {
       frameWidth: 381,
       frameHeight: 196
     });
-    this.load.spritesheet("obstacle_sprites", "obstacles.png", {
+    this.load.spritesheet("obstacle_sprites_level_1", "obstacles.png", {
       frameWidth: 150,
       frameHeight: 240
     });
+
+    this.load.path = "../assets/images/Level_2/";
+    this.load.image("level_2_wall", "wall.png");
+    this.load.image("level_2_floor", "floor.png");
+
+
+
   }
 
   create() {
@@ -251,13 +258,13 @@ export class GameScene extends Phaser.Scene {
     this.floor.rotateX = 285;
     this.floor.setScale(1.6);
 
-    this.wall = this.add.sprite(0, 0, "level_1_wall").setOrigin(0, 0).setScale(1.5);
-    this.wall2 = this.add.sprite(1000, 0, "level_1_wall").setOrigin(0, 0).setScale(1.5);
+    this.wall = this.add.sprite(0, 0, "level_" + this.level + "_wall").setOrigin(0, 0).setScale(1.5);
+    this.wall2 = this.add.sprite(1000, 0, "level_" + this.level + "_wall").setOrigin(0, 0).setScale(1.5);
     this.resetExitWall(this.w, this.h);
 
     this.exitWallTex = this.textures.createCanvas("wallCanvas", this.w, this.h);
     this.exitWallImage = this.add.image(0, 0, "wallCanvas").setOrigin(0, 0).setDepth(1200);
-    this.exitWallImage = this.textures.get("level_1_exit_wall").getSourceImage();
+    this.exitWallImage = this.textures.get("level_" + this.level + "_exit_wall").getSourceImage();
     this.drawExitWall();
 
     const texture = this.textures.createCanvas(
@@ -285,7 +292,7 @@ export class GameScene extends Phaser.Scene {
     this.floorShadow = this.add.image(500, MIDLINE, "gradient");
 
     this.backgroundImage = this.add
-      .sprite(this.w + OBJECT_START_X_OFFSET, this.backgroundItemsY, "background items")
+      .sprite(this.w + OBJECT_START_X_OFFSET, this.backgroundItemsY, "background_items_level_" + this.level)
       .setFrame(Phaser.Math.Between(0, 9));
 
     this.backgroundItems.add(this.backgroundImage);
@@ -319,14 +326,8 @@ export class GameScene extends Phaser.Scene {
         });
       }
     });
-
   }
-  setupLevel2() {
 
-  }
-  setupLevel3() {
-
-  }
   getExitWallMidpoint() {
     const topMidX = Phaser.Math.Linear(this.exitWall.leftX, this.exitWall.rightX, 0.5);
     const topMidY = Phaser.Math.Linear(this.exitWall.topLeftY, this.exitWall.topRightY, 0.5);
@@ -871,7 +872,7 @@ export class GameScene extends Phaser.Scene {
     if (this.avatar.x > this.noMoreStuffLine) return;
     if (++this.backgroundItemsTimer > this.backgroundItemsTimerMax) {
       const image = this.add
-        .sprite(this.w + OBJECT_START_X_OFFSET, this.backgroundItemsY, "background items")
+        .sprite(this.w + OBJECT_START_X_OFFSET, this.backgroundItemsY, "background_items_level_" + this.level)
         .setFrame(Phaser.Math.Between(0, 9));
 
       this.backgroundItems.add(image);
@@ -980,7 +981,7 @@ export class GameScene extends Phaser.Scene {
     const frame = Phaser.Math.Between(0, 8);
 
     const image = this.add
-      .sprite(this.w + OBJECT_START_X_OFFSET, obstacleY, "obstacle_sprites")
+      .sprite(this.w + OBJECT_START_X_OFFSET, obstacleY, "obstacle_sprites_level_" + this.level)
       .setFrame(frame)
       .setOrigin(0.5, 1)
       .setDepth(obstacleY);
