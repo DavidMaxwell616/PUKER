@@ -91,7 +91,7 @@ export class GameScene extends Phaser.Scene {
     this.load.image("pukeMeter", "pukeMeter.png");
     this.load.image("pukeLevel", "puke.png");
     this.load.image("avatar", "avatar.png");
-    this.load.image("progress bar", "progress bar.png");
+    this.load.image("progress bar", "progress_bar.png");
     this.load.image("puker standing", "puker_standing.png");
     this.load.image("level_complete_title", "level_complete.png");
 
@@ -101,6 +101,7 @@ export class GameScene extends Phaser.Scene {
     this.load.image("level_1_floor_1", "floor 1.png");
     this.load.image("level_1_floor_2", "floor 2 square.png");
     this.load.image("bouncer", "bouncer&girl.png");
+
     WALKER_SPRITES.forEach((walker) => {
       this.load.spritesheet(walker.name, `${walker.name}.png`, {
         frameWidth: walker.width,
@@ -242,15 +243,6 @@ export class GameScene extends Phaser.Scene {
   }
 
   setupLevel() {
-    if (this.level === 1) {
-      this.level1Intro.setVisible(true);
-    } else if (this.level === 2) {
-      this.level2Intro.setVisible(true);
-    } else {
-      this.level3Intro.setVisible(true);
-    }
-
-
     const floorKey = FLOOR_TEXTURES['Level' + this.level];
     this.floor = this.add.plane(this.w / 2, 336, floorKey);
     this.floor.setGridSize(16, 16);
@@ -376,13 +368,10 @@ export class GameScene extends Phaser.Scene {
     this.level_complete_title.setVisible(true);
     this.time.delayedCall(5000, () => {
       this.level_complete_title.setVisible(false);
-      this.scene.start("HubScene", {
+      this.scene.start("LevelIntroScene", {
         level: this.level + 1,
         score: this.score,
         lives: this.lives,
-        result: "complete",
-        maxLevels: this.maxLevels,
-        skipIntro: true,
       });
     });
   }
