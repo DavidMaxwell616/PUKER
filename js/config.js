@@ -220,6 +220,12 @@ export const GAME_STATE = Object.freeze({
     LEVEL: 4
 });
 
+export const FLOOR_TEXTURES = {
+    Level1: `level_1_floor_1`,
+    Level2: `level_2_floor_1`,
+    Level3: `level_3_floor_1`,
+}
+
 export const exitScoreboardShape = new Phaser.Geom.Polygon([
     new Phaser.Geom.Point(890, 447),
     new Phaser.Geom.Point(986, 442),

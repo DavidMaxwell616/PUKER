@@ -1,6 +1,7 @@
 
 import { GameScene } from "./GameScene.js";
 import { HubScene } from "./HubScene.js";
+import { LevelIntroScene } from "./LevelIntroScene.js";
 const W = 960, H = 540;
 
 
@@ -12,5 +13,5 @@ new Phaser.Game({
         default: "arcade",
         arcade: { debug: true }
     },
-    scene: [HubScene, GameScene]
+    scene: [HubScene, LevelIntroScene, GameScene]
 });

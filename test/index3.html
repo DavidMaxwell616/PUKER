@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phaser Skew + Gradient</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
+
+</head>
+
+<body>
+    <div id="game-container"></div>
+
+    <script>
+        class MainScene extends Phaser.Scene {
+            constructor() {
+                super("MainScene");
+            }
+
+            preload() {
+                this.load.spritesheet("puker_puking", "../assets/spritesheets/puker_puking.png", {
+                    frameWidth: 218,
+                    frameHeight: 280
+                });
+            }
+
+            create() {
+                this.puker_puking = this.add.sprite(this.game.config.width / 2, this.game.config.height / 2, "puker_puking")
+                    .setOrigin(0.5)
+                    .setScale(.8)
+                    .setDepth(1200);
+                this.puker_puking.flipX = true;
+
+                if (!this.anims.exists("puker_puking")) {
+                    this.anims.create({
+                        key: "puker_puking",
+                        frames: this.anims.generateFrameNumbers("puker_puking", {
+                            start: 0,
+                            end: 20
+                        }),
+                        frameRate: 16,
+                        repeat: -1
+                    });
+                }
+                this.puker_puking.anims.play('puker_puking', true);
+
+            }
+        }
+
+        const config = {
+            type: Phaser.WEBGL,
+            parent: "game-container",
+            width: 800,
+            height: 600,
+            backgroundColor: "#222222",
+            scale: {
+                mode: Phaser.Scale.FIT,
+                autoCenter: Phaser.Scale.CENTER_BOTH
+            },
+            scene: [MainScene]
+        };
+
+        new Phaser.Game(config);
+    </script>
+</body>
+
+</html>
