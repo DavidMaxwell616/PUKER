@@ -192,10 +192,10 @@ export const startButtonShape = new Phaser.Geom.Polygon([
 ]);
 
 export const instructionsButtonShape = new Phaser.Geom.Polygon([
-    new Phaser.Geom.Point(485, 450),
-    new Phaser.Geom.Point(693, 435),
-    new Phaser.Geom.Point(702, 475),
-    new Phaser.Geom.Point(490, 490)
+    new Phaser.Geom.Point(468, 442),
+    new Phaser.Geom.Point(668, 424),
+    new Phaser.Geom.Point(671, 459),
+    new Phaser.Geom.Point(469, 475)
 ]);
 
 export const scoreboardButtonShape = new Phaser.Geom.Polygon([
@@ -221,9 +221,9 @@ export const GAME_STATE = Object.freeze({
 });
 
 export const FLOOR_TEXTURES = {
-    Level1: `level_1_floor_1`,
-    Level2: `level_2_floor_1`,
-    Level3: `level_3_floor_1`,
+    Level1: `level_1_floor`,
+    Level2: `level_2_floor`,
+    Level3: `level_3_floor`,
 }
 
 export const exitScoreboardShape = new Phaser.Geom.Polygon([

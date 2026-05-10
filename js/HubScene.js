@@ -89,6 +89,14 @@ export class HubScene extends Phaser.Scene {
             });
         }
         else if (
+            this.gameState === GAME_STATE.INTRO &&
+            Phaser.Geom.Polygon.Contains(instructionsButtonShape, pointer.x, pointer.y)
+        ) {
+            this.gameState = GAME_STATE.INSTRUCTIONS;
+            this.splash.setVisible(false);
+            this.instructions.setVisible(true);
+        }
+        else if (
             this.gameState === GAME_STATE.INSTRUCTIONS &&
             Phaser.Geom.Polygon.Contains(exitInstructionsShape, pointer.x, pointer.y)
         ) {

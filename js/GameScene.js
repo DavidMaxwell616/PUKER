@@ -98,7 +98,7 @@ export class GameScene extends Phaser.Scene {
     this.load.path = "../assets/images/Level_1/";
     this.load.image("level_1_wall", "brick wall.png");
     this.load.image("level_1_exit_wall", "brick exit wall.png");
-    this.load.image("level_1_floor_1", "floor 1.png");
+    this.load.image("level_1_floor", "floor 1.png");
     this.load.image("level_1_floor_2", "floor 2 square.png");
     this.load.image("bouncer", "bouncer&girl.png");
 
@@ -109,11 +109,11 @@ export class GameScene extends Phaser.Scene {
       });
     });
 
-    this.load.spritesheet("background_items_level_1", "background items.png", {
+    this.load.spritesheet("background_items_level_1", "level_1_background_items.png", {
       frameWidth: 381,
       frameHeight: 196
     });
-    this.load.spritesheet("obstacle_sprites_level_1", "obstacles.png", {
+    this.load.spritesheet("obstacle_sprites_level_1", "level_1_obstacles.png", {
       frameWidth: 150,
       frameHeight: 240
     });
@@ -121,8 +121,15 @@ export class GameScene extends Phaser.Scene {
     this.load.path = "../assets/images/Level_2/";
     this.load.image("level_2_wall", "wall.png");
     this.load.image("level_2_floor", "floor.png");
-
-
+    this.load.image("level_2_exit_wall", "exit wall level 2.png");
+    this.load.spritesheet("background_items_level_2", "test.png", {
+      frameWidth: 277,
+      frameHeight: 173
+    });
+    this.load.spritesheet("obstacle_sprites_level_2", "level_2_obstacles.png", {
+      frameWidth: 54,
+      frameHeight: 127
+    });
 
   }
 
@@ -176,7 +183,7 @@ export class GameScene extends Phaser.Scene {
 
     this.pukeMeter = this.add.sprite(25, 260, "pukeMeter").setScale(1.4).setDepth(2000);
     this.pukeLevel = this.add.sprite(27, 500, "pukeLevel").setScale(1.3).setOrigin(0.5, 0).setDepth(2000);
-    this.pukeSign = this.add.sprite(25, 15, "puke_sign");
+    this.pukeSign = this.add.sprite(25, 15, "puke_sign").setDepth(2000);
     this.puker_puking = this.add.sprite(0, 0, "puker_puking").setOrigin(0.5, 1).setScale(.8).setDepth(1200);
     this.puker_puking.flipX = true;
 
@@ -250,6 +257,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   setupLevel() {
+    this.distanceCovered = 0;
+    this.levelComplete = false;
     const floorKey = FLOOR_TEXTURES['Level' + this.level];
     this.floor = this.add.plane(this.w / 2, 336, floorKey);
     this.floor.setGridSize(16, 16);
@@ -257,30 +266,35 @@ export class GameScene extends Phaser.Scene {
     this.floor.viewPosition.z = 1.6;
     this.floor.rotateX = 285;
     this.floor.setScale(1.6);
-
     this.wall = this.add.sprite(0, 0, "level_" + this.level + "_wall").setOrigin(0, 0).setScale(1.5);
     this.wall2 = this.add.sprite(1000, 0, "level_" + this.level + "_wall").setOrigin(0, 0).setScale(1.5);
     this.resetExitWall(this.w, this.h);
 
-    this.exitWallTex = this.textures.createCanvas("wallCanvas", this.w, this.h);
-    this.exitWallImage = this.add.image(0, 0, "wallCanvas").setOrigin(0, 0).setDepth(1200);
+    if (!this.textures.exists("wallCanvas")) {
+      this.exitWallTex = this.textures.createCanvas("wallCanvas", this.w, this.h);
+      this.exitWallImage = this.add.image(0, 0, "wallCanvas").setOrigin(0, 0).setDepth(1200);
+    }
+
     this.exitWallImage = this.textures.get("level_" + this.level + "_exit_wall").getSourceImage();
+
     this.drawExitWall();
 
     const texture = this.textures.createCanvas(
-      "gradient",
+      "gradient_" + this.level,
       this.w + OBJECT_START_X_OFFSET,
       FLOOR_TEXTURE_HEIGHT
     );
 
     this.cursors = this.input.keyboard.createCursorKeys();
     this.pukerStanding = this.add.image(0, 0, "puker standing").setOrigin(0.5, 1).setScale(.9).setDepth(1200).setVisible(false);
+    if (this.level === 1) {
+      this.bouncer = this.add.image(0, 0, "bouncer")
+        .setOrigin(0.5, 0)
+        .setDepth(1250)
+        .setScale(0.7)
+        .setVisible(false);
+    }
 
-    this.bouncer = this.add.image(0, 0, "bouncer")
-      .setOrigin(0.5, 0)
-      .setDepth(1250)
-      .setScale(0.7)
-      .setVisible(false);
     const grd = texture.context.createLinearGradient(0, 0, 0, FLOOR_TEXTURE_HEIGHT);
     grd.addColorStop(0, "rgba(0, 0, 0, .7)");
     grd.addColorStop(1, "rgba(0, 0, 0, .01)");
@@ -289,11 +303,12 @@ export class GameScene extends Phaser.Scene {
     texture.context.fillRect(0, 0, this.w + 20, FLOOR_TEXTURE_HEIGHT);
     texture.refresh();
 
-    this.floorShadow = this.add.image(500, MIDLINE, "gradient");
+    this.floorShadow = this.add.image(500, MIDLINE, "gradient_" + this.level);
 
     this.backgroundImage = this.add
-      .sprite(this.w + OBJECT_START_X_OFFSET, this.backgroundItemsY, "background_items_level_" + this.level)
-      .setFrame(Phaser.Math.Between(0, 9));
+      .sprite(this.w + OBJECT_START_X_OFFSET, this.backgroundItemsY, "background_items_level_" + this.level);
+    const frame = Phaser.Math.Between(0, this.backgroundImage.frames);
+    this.backgroundImage.setFrame(frame);
 
     this.backgroundItems.add(this.backgroundImage);
 
@@ -363,11 +378,17 @@ export class GameScene extends Phaser.Scene {
   completeLevel() {
     if (this.levelComplete || this.levelFailed) return;
 
+    this.walkers.getChildren().forEach((walker) => {
+      walker.destroy();
+    });
+
     this.levelComplete = true;
     this.startGame = false;
     this.score += 1000 * this.level;
     this.level_complete_title.setVisible(true);
     this.time.delayedCall(5000, () => {
+      this.levelComplete = false;
+      this.gameState = GAME_STATE.LEVEL;
       this.level_complete_title.setVisible(false);
       this.scene.start("LevelIntroScene", {
         level: this.level + 1,
@@ -770,8 +791,7 @@ export class GameScene extends Phaser.Scene {
     if (this.puker) {
       previousY = this.puker.y;
       previousX = this.puker.x;
-
-      this.puker.anims.stop();
+      this.puker.anims?.stop();
       this.puker.visible = false;
     }
 
@@ -872,8 +892,9 @@ export class GameScene extends Phaser.Scene {
     if (this.avatar.x > this.noMoreStuffLine) return;
     if (++this.backgroundItemsTimer > this.backgroundItemsTimerMax) {
       const image = this.add
-        .sprite(this.w + OBJECT_START_X_OFFSET, this.backgroundItemsY, "background_items_level_" + this.level)
-        .setFrame(Phaser.Math.Between(0, 9));
+        .sprite(this.w + OBJECT_START_X_OFFSET, this.backgroundItemsY, "background_items_level_" + this.level);
+      const frame = Phaser.Math.Between(0, image.frames);
+      image.setFrame(frame);
 
       this.backgroundItems.add(image);
       this.backgroundItemsTimer = 0;
@@ -882,7 +903,9 @@ export class GameScene extends Phaser.Scene {
     if (++this.obstaclesTimer > this.obstaclesTimerMax) this.createNewObstacle();
     if (++this.waterTimer > this.waterTimerMax) this.createNewWater();
     if (++this.peopleTimer > this.peopleTimerMax) this.createNewPerson();
-    if (++this.walkersTimer > this.walkersTimerMax) this.createNewWalker();
+    if (this.level === 1 || this.level === 3) {
+      if (++this.walkersTimer > this.walkersTimerMax) this.createNewWalker();
+    }
   }
 
   checkPukerMove() {
@@ -978,13 +1001,14 @@ export class GameScene extends Phaser.Scene {
 
   createNewObstacle() {
     const obstacleY = Phaser.Math.Between(PUKER_MIN_Y, PUKER_MAX_Y);
-    const frame = Phaser.Math.Between(0, 8);
 
     const image = this.add
       .sprite(this.w + OBJECT_START_X_OFFSET, obstacleY, "obstacle_sprites_level_" + this.level)
-      .setFrame(frame)
       .setOrigin(0.5, 1)
       .setDepth(obstacleY);
+    const frame = Phaser.Math.Between(0, image.frames);
+
+    image.setFrame(frame);
 
     this.setShading(image);
     this.setPerspective(image);
