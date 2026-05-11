@@ -24,16 +24,14 @@
             }
 
             preload() {
-                this.load.image("floor1", "./floor 1.png");
-                this.load.image("floor2", "./floor 2.png");
-                this.load.image("floor3", "./floor 3.png");
+                this.load.image("floor", "./floor.png");
             }
             create() {
                 this.cameras.main.setBackgroundColor("#050505");
 
                 this.cursors = this.input.keyboard.createCursorKeys();
 
-                const floorKey = `floor3`;
+                const floorKey = `floor`;
                 const w = this.game.config.width;
                 const h = this.game.config.height;
                 this.floor = this.add.plane(w / 2, 300, floorKey);
@@ -44,7 +42,7 @@
             }
 
             update() {
-                this.floor.uvScroll(0.002, 0);
+                this.floor.uvScroll(0.001, 0);
             }
         }
         const config = {

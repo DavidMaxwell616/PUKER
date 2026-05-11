@@ -127,8 +127,8 @@ export class GameScene extends Phaser.Scene {
       frameHeight: 173
     });
     this.load.spritesheet("obstacle_sprites_level_2", "level_2_obstacles.png", {
-      frameWidth: 54,
-      frameHeight: 127
+      frameWidth: 150,
+      frameHeight: 240
     });
 
   }
@@ -260,12 +260,11 @@ export class GameScene extends Phaser.Scene {
     this.distanceCovered = 0;
     this.levelComplete = false;
     const floorKey = FLOOR_TEXTURES['Level' + this.level];
-    this.floor = this.add.plane(this.w / 2, 336, floorKey);
-    this.floor.setGridSize(16, 16);
-    this.floor.uvScale(16, 16);
-    this.floor.viewPosition.z = 1.6;
-    this.floor.rotateX = 285;
-    this.floor.setScale(1.6);
+
+    this.floor = this.add.plane(this.w / 2, 320, floorKey);
+    this.floor.viewPosition.z = .8;
+    this.floor.rotateX = 300;
+    this.floor.setScale(.70);
     this.wall = this.add.sprite(0, 0, "level_" + this.level + "_wall").setOrigin(0, 0).setScale(1.5);
     this.wall2 = this.add.sprite(1000, 0, "level_" + this.level + "_wall").setOrigin(0, 0).setScale(1.5);
     this.resetExitWall(this.w, this.h);
@@ -286,6 +285,7 @@ export class GameScene extends Phaser.Scene {
     );
 
     this.cursors = this.input.keyboard.createCursorKeys();
+
     this.pukerStanding = this.add.image(0, 0, "puker standing").setOrigin(0.5, 1).setScale(.9).setDepth(1200).setVisible(false);
     if (this.level === 1) {
       this.bouncer = this.add.image(0, 0, "bouncer")
@@ -307,7 +307,7 @@ export class GameScene extends Phaser.Scene {
 
     this.backgroundImage = this.add
       .sprite(this.w + OBJECT_START_X_OFFSET, this.backgroundItemsY, "background_items_level_" + this.level);
-    const frame = Phaser.Math.Between(0, this.backgroundImage.frames);
+    const frame = Phaser.Math.Between(0, this.backgroundImage.texture.getFrameNames().length - 1);
     this.backgroundImage.setFrame(frame);
 
     this.backgroundItems.add(this.backgroundImage);
@@ -387,6 +387,8 @@ export class GameScene extends Phaser.Scene {
     this.score += 1000 * this.level;
     this.level_complete_title.setVisible(true);
     this.time.delayedCall(5000, () => {
+      this.pukerPause = false;
+      this.pukerSpeed = 1;
       this.levelComplete = false;
       this.gameState = GAME_STATE.LEVEL;
       this.level_complete_title.setVisible(false);
@@ -855,7 +857,7 @@ export class GameScene extends Phaser.Scene {
     else this.wall2.x = 1000;
 
     if (!this.pukerPause) {
-      this.floor.uvScroll(0.012 + this.level * 0.002, 0);
+      this.floor.uvScroll(0.0008, 0);
     }
   }
 
@@ -893,7 +895,7 @@ export class GameScene extends Phaser.Scene {
     if (++this.backgroundItemsTimer > this.backgroundItemsTimerMax) {
       const image = this.add
         .sprite(this.w + OBJECT_START_X_OFFSET, this.backgroundItemsY, "background_items_level_" + this.level);
-      const frame = Phaser.Math.Between(0, image.frames);
+      const frame = Phaser.Math.Between(0, image.texture.getFrameNames().length - 1);
       image.setFrame(frame);
 
       this.backgroundItems.add(image);
@@ -910,7 +912,6 @@ export class GameScene extends Phaser.Scene {
 
   checkPukerMove() {
     if (this.pukerPause || !this.puker) return;
-
     if (this.cursors.up.isDown && this.puker.y > PUKER_MIN_Y) {
       this.puker.y--;
       this.pukerStates.getChildren().forEach((element) => {
@@ -990,11 +991,10 @@ export class GameScene extends Phaser.Scene {
       WALKER_SPRITES[walkerIndex].name
     );
 
-    newWalker.setScale(-1, 0.8);
+    newWalker.setScale(-1, .8);
     newWalker.anims.play(WALKER_SPRITES[walkerIndex].name);
 
     this.walkers.add(newWalker);
-
     this.walkersTimer = 0;
     this.walkersTimerMax = Phaser.Math.Between(this.timeMin, this.timeMax + 500);
   }
@@ -1006,8 +1006,7 @@ export class GameScene extends Phaser.Scene {
       .sprite(this.w + OBJECT_START_X_OFFSET, obstacleY, "obstacle_sprites_level_" + this.level)
       .setOrigin(0.5, 1)
       .setDepth(obstacleY);
-    const frame = Phaser.Math.Between(0, image.frames);
-
+    const frame = Phaser.Math.Between(0, image.texture.getFrameNames().length - 1);
     image.setFrame(frame);
 
     this.setShading(image);

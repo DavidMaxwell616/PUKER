@@ -9,6 +9,7 @@ new Phaser.Game({
     type: Phaser.AUTO,
     width: W,
     height: H,
+    backgroundColor: '#4488aa',
     physics: {
         default: "arcade",
         arcade: { debug: true }
