@@ -26,29 +26,46 @@
             preload() {
                 this.load.image("floor", "./floor.png");
             }
+
             create() {
                 this.cameras.main.setBackgroundColor("#050505");
+                this.cameras.main.roundPixels = true;
 
-                this.cursors = this.input.keyboard.createCursorKeys();
-
-                const floorKey = `floor`;
                 const w = this.game.config.width;
-                const h = this.game.config.height;
-                this.floor = this.add.plane(w / 2, 300, floorKey);
-                this.floor.viewPosition.z = 1.1;
+
+                this.floor = this.add.plane(w / 2, 300, "floor");
+
+                this.floor.setGridSize(64, 64);
+
+                // Crisp sampling, prevents shimmering/wiggle
+                this.textures.get("floor").setFilter(Phaser.Textures.FilterMode.NEAREST);
+
+                this.floor.viewPosition.z = 1.4;
                 this.floor.rotateX = 285;
-
-
+                this.floor.setScale(1.7);
+                this.scrollX = 0;
             }
 
             update() {
-                this.floor.uvScroll(0.001, 0);
+                // Accumulate first, then apply. More stable than tiny direct increments.
+                this.scrollX += 0.001;
+                // 0.00005  // very slow
+                // 0.0001   // slow
+                // 0.00015  // medium-slow
+                this.floor.uvScroll(0.0015, 0);
+                // Optional snapping reduces shimmer even more
+                //const snapped = Math.round(this.scrollX * 1000) / 1000;
+
+                //this.floor.uvScroll(snapped, 0);
             }
         }
+
         const config = {
             type: Phaser.WEBGL,
             width: window.innerWidth,
             height: window.innerHeight,
+            pixelArt: true,
+            roundPixels: true,
             scene: MainScene,
             scale: {
                 mode: Phaser.Scale.RESIZE,
