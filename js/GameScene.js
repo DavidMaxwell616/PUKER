@@ -10,7 +10,7 @@ export class GameScene extends Phaser.Scene {
     super("GameScene");
 
     this.backgroundImages = null;
-    this.backgroundItemsY = 186;
+    this.backgroundItemsY = 176;
 
     this.timeMin = 400;
     this.timeMax = 1000;
@@ -122,31 +122,39 @@ export class GameScene extends Phaser.Scene {
     });
 
     this.load.path = "../assets/images/Level_2/";
-    this.load.image("level_2_wall", "wall.png");
-    this.load.image("level_2_floor", "floor.png");
-    this.load.image("level_2_exit_wall", "exit wall level 2.png");
-    this.load.spritesheet("background_items_level_2", "background_items.png", {
+
+    this.load.spritesheet("background_items_level_2", "level_2_background_items.png", {
       frameWidth: 277,
       frameHeight: 173
     });
+
+
+    this.load.path = "./assets/images/Level_2/";
+
+    this.load.image("level_2_wall", "wall.png");
+    this.load.image("level_2_floor", "floor.png");
+    this.load.image("level_2_exit_wall", "exit wall level 2.png");
     this.load.spritesheet("obstacle_sprites_level_2", "level_2_obstacles.png", {
       frameWidth: 150,
       frameHeight: 240
+    });
+
+
+    this.load.path = "../assets/images/Level_3/";
+    this.load.spritesheet("background_items_level_3", "level_3_background_items.png", {
+      frameWidth: 277,
+      frameHeight: 173
     });
 
     this.load.path = "../assets/images/Level_3/";
     this.load.image("level_3_wall", "wall.png");
     this.load.image("level_3_floor", "floor level 3.png");
     this.load.image("level_3_exit_wall", "level_3_exit_wall.png");
-    this.load.spritesheet("background_items_level_3", "test.png", {
-      frameWidth: 277,
-      frameHeight: 173
-    });
+
     this.load.spritesheet("obstacle_sprites_level_3", "level_3_obstacles.png", {
       frameWidth: 200,
       frameHeight: 240
     });
-
   }
 
   create() {
@@ -260,7 +268,7 @@ export class GameScene extends Phaser.Scene {
         key: "avatar",
         frames: this.anims.generateFrameNumbers("avatar", {
           start: 0,
-          end: 7
+          end: 3
         }),
         frameRate: 8,
         repeat: -1
@@ -307,12 +315,6 @@ export class GameScene extends Phaser.Scene {
     this.distanceCovered = 0;
     this.levelComplete = false;
     const floorKey = FLOOR_TEXTURES['Level' + this.level];
-
-    // this.floor = this.add.plane(this.w / 2, 300, floorKey);
-    // this.floor.viewPosition.z = 1.4;
-    // this.floor.rotateX = 283;
-    // this.floor.setScale(1.35);
-    // this.textures.get(floorKey).setFilter(Phaser.Textures.FilterMode.NEAREST);
 
     this.floor = this.add.plane(this.w / 2, 300, floorKey);
 
@@ -453,7 +455,7 @@ export class GameScene extends Phaser.Scene {
     this.walkers.getChildren().forEach((walker) => {
       walker.destroy();
     });
-    this.avatar.anims?.stop();
+    this.avatar.anims?.pause();
     this.levelComplete = true;
     this.startGame = false;
     this.score += 1000 * this.level;

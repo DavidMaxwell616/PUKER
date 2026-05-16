@@ -9,10 +9,11 @@ new Phaser.Game({
     type: Phaser.AUTO,
     width: W,
     height: H,
+    pixelArt: true,
     backgroundColor: '#4488aa',
     physics: {
         default: "arcade",
-        arcade: { debug: true }
+        arcade: { debug: false }
     },
     scene: [HubScene, LevelIntroScene, GameScene]
 });
