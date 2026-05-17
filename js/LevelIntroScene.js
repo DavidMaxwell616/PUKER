@@ -52,14 +52,16 @@ export class LevelIntroScene extends Phaser.Scene {
             .setScale(.3)
             .setInteractive();
 
-        console.log(this.level);
+        this.spaceKey = this.input.keyboard.addKey(
+            Phaser.Input.Keyboard.KeyCodes.SPACE
+        );
 
-        if (this.level > this.maxLevels) {
+        if (this.level > 3 || this.lives === 0) {
             this.gameOver.setVisible(true);
             this.gameOverTitle.setVisible(true);
             this.time.delayedCall(5000, () => {
                 this.gameOverTitle.destroy();
-                this.finalScoreText = this.add.text(200, 130, this.score, {
+                this.finalScoreText = this.add.text(200, 130, this.score.toLocaleString(), {
                     fontFamily: "Arial",
                     fontSize: "40px",
                     fontWeight: "bold",
@@ -69,26 +71,22 @@ export class LevelIntroScene extends Phaser.Scene {
         }
         else {
             this.levelIntros[this.level - 1].setVisible(true);
-            this.spaceKey = this.input.keyboard.addKey(
-                Phaser.Input.Keyboard.KeyCodes.SPACE
-            );
+
             this.input.on('pointerdown', (pointer) => {
                 this.scene.start("GameScene", {
                     level: this.level,
                     score: this.score,
                     lives: this.lives,
-                    maxLevels: this.maxLevels
                 });
             })
         }
     }
     update() {
-        if (this.spaceKey.isDown) {
+        if (this.spaceKey.isDown && this.level < 4) {
             this.scene.start("GameScene", {
                 level: this.level,
                 score: this.score,
                 lives: this.lives,
-                maxLevels: this.maxLevels
             });
         }
     }

@@ -47,7 +47,6 @@ export class GameScene extends Phaser.Scene {
     this.level = data.level ?? 1;
     this.score = data.score ?? 0;
     this.lives = data.lives ?? 3;
-    this.maxLevels = data.maxLevels ?? 3;
     this.skipIntro = data.skipIntro;
     this.levelComplete = false;
     this.levelFailed = false;
@@ -166,16 +165,15 @@ export class GameScene extends Phaser.Scene {
     this.waters = this.physics.add.group();
     this.w = this.game.config.width;
     this.h = this.game.config.height;
-
+    this.shadowLayer = this.add.layer().setDepth(1);
     if (this.level < 4) {
       this.setupLevel();
     }
     else {
-      this.scene.start("HubScene", {
-        level: this.level + 1,
+      this.scene.start("LevelIntroScene", {
+        level: this.level,
         score: this.score,
         lives: this.lives,
-        gameOver: true,
       });
     }
 
@@ -416,7 +414,50 @@ export class GameScene extends Phaser.Scene {
       }
     });
   }
+  createShadow(target, width = 40, height = 14, alpha = 0.25) {
+    const shadow = this.add.ellipse(
+      target.x,
+      target.y + 4,
+      width,
+      height,
+      0x000000,
+      alpha
+    );
 
+    shadow.setDepth(target.depth - 1);
+
+    shadow.target = target;
+    shadow.baseWidth = width;
+    shadow.baseHeight = height;
+    shadow.baseAlpha = alpha;
+
+    this.shadowLayer.add(shadow);
+
+    return shadow;
+  }
+
+  updateShadow(shadow) {
+    if (!shadow || !shadow.target || !shadow.target.active) {
+      shadow?.destroy();
+      return;
+    }
+
+    const target = shadow.target;
+
+    shadow.x = target.x;
+    shadow.y = target.y - 6;
+
+    // perspective scaling
+    const scale = Math.max(0.4, target.scaleY);
+
+    shadow.width = shadow.baseWidth * scale;
+    shadow.height = shadow.baseHeight * scale;
+
+    // farther away = fainter
+    shadow.alpha = shadow.baseAlpha * scale;
+
+    shadow.setDepth(target.depth - 1);
+  }
   getExitWallMidpoint() {
     const topMidX = Phaser.Math.Linear(this.exitWall.leftX, this.exitWall.rightX, 0.5);
     const topMidY = Phaser.Math.Linear(this.exitWall.topLeftY, this.exitWall.topRightY, 0.5);
@@ -484,24 +525,17 @@ export class GameScene extends Phaser.Scene {
 
     this.levelFailed = true;
     this.startGame = false;
-    this.lives -= 1;
     this.puker.setVisible(false);
     this.puker_puking.setPosition(this.puker.x, this.puker.y);
     this.puker_puking.setVisible(true);
     this.puker_puking.anims.play('puker_puking', true);
     this.puker_puking.once("animationcomplete", () => {
-      if (this.lives == 1) {
-
-      }
-      else {
-        this.lives--;
-        this.scene.start("HubScene", {
-          level: this.level,
-          score: this.score,
-          lives: this.lives,
-          gameOver: this.level > 2,
-        });
-      }
+      this.lives--;
+      this.scene.start("LevelIntroScene", {
+        level: this.level,
+        score: this.score,
+        lives: this.lives,
+      });
     });
   }
 
@@ -863,6 +897,19 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
+  getGroundScrollSpeed(sprite) {
+    const t = Phaser.Math.Clamp(
+      (sprite.y - PUKER_MIN_Y) / (PUKER_MAX_Y - PUKER_MIN_Y),
+      0,
+      1
+    );
+
+    // far/top = slower, near/bottom = faster
+    const perspectiveSpeed = Phaser.Math.Linear(0.95, 2.15, t);
+
+    return this.pukerSpeed * perspectiveSpeed;
+  }
+
   changePukerState(state, anim) {
     let previousY = Phaser.Math.Clamp(this.h * 0.7, PUKER_MIN_Y, PUKER_MAX_Y);
     let previousX = this.w * 0.3;
@@ -873,7 +920,6 @@ export class GameScene extends Phaser.Scene {
       this.puker.anims?.stop();
       this.puker.visible = false;
     }
-
     const nextPuker = this.pukerStates.getChildren()[state];
     if (!nextPuker) return;
 
@@ -888,6 +934,9 @@ export class GameScene extends Phaser.Scene {
     this.setShading(this.puker);
     this.setPerspective(this.puker);
     this.updatePukerDepth();
+    if (!this.puker.shadow) {
+      this.puker.shadow = this.createShadow(this.puker, this.puker.width, 18, 0.32);
+    }
 
     if (
       this.puker.anims.currentAnim &&
@@ -919,9 +968,8 @@ export class GameScene extends Phaser.Scene {
 
     this.setShading(newPerson);
     this.setPerspective(newPerson);
-
+    newPerson.shadow = this.createShadow(newPerson, newPerson.width, 12, 0.18);
     this.people.add(newPerson);
-
     this.peopleTimer = 0;
     this.peopleTimerMax = Phaser.Math.Between(this.timeMin, this.timeMax);
   }
@@ -934,7 +982,8 @@ export class GameScene extends Phaser.Scene {
     else this.wall2.x = 1000;
 
     if (!this.pukerPause) {
-      this.floor.uvScroll(0.0008, 0);
+      const scrollSpeed = 0.00095 * this.pukerSpeed;
+      this.floor.uvScroll(scrollSpeed, 0);
     }
   }
 
@@ -946,19 +995,19 @@ export class GameScene extends Phaser.Scene {
 
     this.obstacles.getChildren().forEach((element) => {
       element.setDepth(element.y + (element.isWobbling ? 1 : 0));
-      element.x -= this.pukerSpeed;
+      element.x -= this.getGroundScrollSpeed(element);
       if (element.x < 0) element.destroy();
     });
 
     this.waters.getChildren().forEach((element) => {
       element.setDepth(element.y);
-      element.x -= this.pukerSpeed;
+      element.x -= this.getGroundScrollSpeed(element);
       if (element.x < 0) element.destroy();
     });
 
     this.people.getChildren().forEach((element) => {
       element.setDepth(element.y);
-      element.x -= this.pukerSpeed;
+      element.x -= this.getGroundScrollSpeed(element);
       if (element.x < 0) element.destroy();
     });
 
@@ -1070,6 +1119,7 @@ export class GameScene extends Phaser.Scene {
 
     newWalker.setScale(-1, .8);
     newWalker.anims.play(WALKER_SPRITES[walkerIndex].name);
+    newWalker.shadow = this.createShadow(newWalker, newWalker.width, 12, 0.18);
 
     this.walkers.add(newWalker);
     this.walkersTimer = 0;
@@ -1085,7 +1135,7 @@ export class GameScene extends Phaser.Scene {
       .setDepth(obstacleY);
     const frame = Phaser.Math.Between(0, image.texture.getFrameNames().length - 1);
     image.setFrame(frame);
-
+    image.shadow = this.createShadow(image, image.width, 16, 0.22);
     this.setShading(image);
     this.setPerspective(image);
     const keysArray = Object.keys(OBSTACLE_TYPE);
@@ -1109,7 +1159,7 @@ export class GameScene extends Phaser.Scene {
       .sprite(this.w + OBJECT_START_X_OFFSET, obstacleY, "water")
       .setOrigin(0.5, 1)
       .setDepth(obstacleY);
-
+    image.shadow = this.createShadow(image, image.width, 10, 0.12);
     this.setShading(image);
     this.setPerspective(image);
     image.hit = false;
@@ -1168,6 +1218,18 @@ export class GameScene extends Phaser.Scene {
       this.failLevel();
       return;
     }
+
+    [
+      ...this.obstacles.getChildren(),
+      ...this.people.getChildren(),
+      ...this.waters.getChildren(),
+      ...this.walkers.getChildren(),
+      ...this.pukerStates.getChildren()
+    ].forEach(obj => {
+      if (obj.shadow) {
+        this.updateShadow(obj.shadow);
+      }
+    });
 
     this.updatePukerDepth();
 

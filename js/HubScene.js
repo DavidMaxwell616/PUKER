@@ -16,7 +16,6 @@ export class HubScene extends Phaser.Scene {
         this.level = data.level ?? 1;
         this.score = data.score ?? 0;
         this.lives = data.lives ?? 3;
-        this.gameOver = data.gameOver;
         this.gameState = GAME_STATE.INTRO;
     }
 
@@ -50,11 +49,7 @@ export class HubScene extends Phaser.Scene {
             this.game.config.height * 0.94,
             "maxxdaddy"
         );
-        this.gameOver = this.add.image(
-            this.game.config.width,
-            this.game.config.height,
-            "game_over"
-        ).setVisible(false);
+
 
         this.splash.on("pointerdown", (pointer) => {
             this.SetSplashState(pointer);
@@ -84,7 +79,6 @@ export class HubScene extends Phaser.Scene {
                 level: this.level,
                 score: this.score,
                 lives: this.lives,
-                maxLevels: this.maxLevels
             });
         }
         else if (
