@@ -7,9 +7,9 @@ import {
     exitScoreboardShape,
 } from "./config.js";
 
-export class HubScene extends Phaser.Scene {
+export class SplashScene extends Phaser.Scene {
     constructor() {
-        super("HubScene");
+        super("SplashScene");
     }
 
     init(data) {

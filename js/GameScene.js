@@ -73,6 +73,13 @@ export class GameScene extends Phaser.Scene {
       });
     });
 
+    WALKER_SPRITES.forEach((walker) => {
+      this.load.spritesheet(walker.name, `${walker.name}.png`, {
+        frameWidth: walker.width,
+        frameHeight: walker.height
+      });
+    });
+
 
     this.load.spritesheet("puke_sign", "puke_sign.png", {
       frameWidth: 47,
@@ -104,12 +111,6 @@ export class GameScene extends Phaser.Scene {
     this.load.image("level_1_floor_2", "floor 2 square.png");
     this.load.image("bouncer", "bouncer&girl.png");
 
-    WALKER_SPRITES.forEach((walker) => {
-      this.load.spritesheet(walker.name, `${walker.name}.png`, {
-        frameWidth: walker.width,
-        frameHeight: walker.height
-      });
-    });
 
     this.load.spritesheet("background_items_level_1", "level_1_background_items.png", {
       frameWidth: 277,
@@ -350,15 +351,22 @@ export class GameScene extends Phaser.Scene {
 
     this.drawExitWall();
 
-    const texture = this.textures.createCanvas(
-      "gradient_" + this.level,
-      this.w + OBJECT_START_X_OFFSET,
-      FLOOR_TEXTURE_HEIGHT
-    );
+    if (!this.textures.exists("gradient_" + this.level)) {
+      this.gradientTexture = this.textures.createCanvas(
+        "gradient_" + this.level,
+        this.w + OBJECT_START_X_OFFSET,
+        FLOOR_TEXTURE_HEIGHT
+      );
+    }
 
     this.cursors = this.input.keyboard.createCursorKeys();
 
-    this.pukerStanding = this.add.image(0, 0, "puker standing").setOrigin(0.5, 1).setScale(.9).setDepth(1200).setVisible(false);
+    this.pukerStanding = this.add.image(0, 0, "puker standing")
+      .setOrigin(0.5, 1)
+      .setScale(.9)
+      .setDepth(1200)
+      .setVisible(false);
+
     if (this.level === 1) {
       this.bouncer = this.add.image(0, 0, "bouncer")
         .setOrigin(0.5, 0)
@@ -367,13 +375,13 @@ export class GameScene extends Phaser.Scene {
         .setVisible(false);
     }
 
-    const grd = texture.context.createLinearGradient(0, 0, 0, FLOOR_TEXTURE_HEIGHT);
+    const grd = this.gradientTexture.context.createLinearGradient(0, 0, 0, FLOOR_TEXTURE_HEIGHT);
     grd.addColorStop(0, "rgba(0, 0, 0, .7)");
     grd.addColorStop(1, "rgba(0, 0, 0, .01)");
 
-    texture.context.fillStyle = grd;
-    texture.context.fillRect(0, 0, this.w + 20, FLOOR_TEXTURE_HEIGHT);
-    texture.refresh();
+    this.gradientTexture.context.fillStyle = grd;
+    this.gradientTexture.context.fillRect(0, 0, this.w + 20, FLOOR_TEXTURE_HEIGHT);
+    this.gradientTexture.refresh();
 
     this.floorShadow = this.add.image(500, MIDLINE, "gradient_" + this.level);
 
@@ -702,8 +710,7 @@ export class GameScene extends Phaser.Scene {
     person.hit = true;
     person.anims.play(person.name, true);
 
-    const anims = [0, 2, 5];
-    const stateValue = anims[Math.floor(Math.random() * anims.length)];
+    const stateValue = Phaser.Math.Between(0, 3);
     const animKey = Object.keys(PUKER_STATE).find((key) => PUKER_STATE[key] === stateValue);
 
     this.changePukerState(stateValue, PUKER_ANIM[animKey]);
@@ -935,7 +942,7 @@ export class GameScene extends Phaser.Scene {
     this.setPerspective(this.puker);
     this.updatePukerDepth();
     if (!this.puker.shadow) {
-      this.puker.shadow = this.createShadow(this.puker, this.puker.width, 18, 0.32);
+      this.puker.shadow = this.createShadow(this.puker, this.puker.width * .9, 18, 0.32);
     }
 
     if (

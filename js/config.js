@@ -18,13 +18,12 @@ export const MAX_PUKE_LIMIT = 40;
 
 export const PUKER_STATE = Object.freeze({
     BUMPING: 0,
-    DRINKING: 1,
-    FALLING: 2,
-    GAGGING: 3,
+    FALLING: 1,
+    GAGGING: 2,
+    STUMBLING: 3,
     RUNNING: 4,
-    STUMBLING: 5,
-    WALKING: 6,
-    HIT: 7,
+    WALKING: 5,
+    DRINKING: 6,
 });
 
 export const OBSTACLE_TYPE = Object.freeze({
@@ -41,13 +40,12 @@ export const OBSTACLE_TYPE = Object.freeze({
 
 export const PUKER_ANIM = Object.freeze({
     BUMPING: "puker_bumping",
-    DRINKING: "puker_drinking",
     FALLING: "puker_falling",
     GAGGING: "puker_gagging",
-    RUNNING: "puker_running",
     STUMBLING: "puker_stumbling",
+    RUNNING: "puker_running",
     WALKING: "puker_walking",
-    HIT: "puker_bumping",
+    DRINKING: "puker_drinking",
 });
 
 export const PUKER_STATES = [
@@ -59,16 +57,9 @@ export const PUKER_STATES = [
         frames: 12,
         repeat: false,
     },
+
     {
         id: 1,
-        name: "puker_drinking",
-        width: 188,
-        height: 240,
-        frames: 18,
-        repeat: false,
-    },
-    {
-        id: 2,
         name: "puker_falling",
         width: 226,
         height: 240,
@@ -76,23 +67,15 @@ export const PUKER_STATES = [
         repeat: false,
     },
     {
-        id: 3,
+        id: 2,
         name: "puker_gagging",
-        width: 182,
-        height: 227,
+        width: 192,
+        height: 240,
         frames: 31,
         repeat: false,
     },
     {
-        id: 4,
-        name: "puker_running",
-        width: 209,
-        height: 225,
-        frames: 9,
-        repeat: true,
-    },
-    {
-        id: 5,
+        id: 3,
         name: "puker_stumbling",
         width: 175,
         height: 240,
@@ -100,13 +83,29 @@ export const PUKER_STATES = [
         repeat: false,
     },
     {
-        id: 6,
+        id: 4,
+        name: "puker_drinking",
+        width: 188,
+        height: 240,
+        frames: 18,
+        repeat: false,
+    },
+    {
+        id: 5,
         name: "puker_walking",
         width: 172,
         height: 238,
         frames: 9,
         repeat: true,
-    }
+    },
+    {
+        id: 6,
+        name: "puker_running",
+        width: 209,
+        height: 225,
+        frames: 9,
+        repeat: true,
+    },
 ];
 
 export const PEOPLE_SPRITES = [
@@ -179,7 +178,7 @@ export const WALKER_SPRITES = [
         name: "walker_3",
         width: 173,
         height: 240,
-        frames: 16,
+        frames: 13,
         repeat: true
     },
 ];
